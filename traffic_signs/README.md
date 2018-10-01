@@ -1,7 +1,7 @@
-# mcv-m1-example-code
+# Traffic Sign Detection
 
 
-Introduction to Human and Computer Vision project
+Esample code:
 
  - Use traffic_sign_detection.py as a template for your code. This functions shows hot to use the evaluation functions.
 
