@@ -1,5 +1,5 @@
-# mcv-m1-example-code
+# Team 4
 
 
-Introduction to Human and Computer Vision project example code
+Introduction to Human and Computer Vision project code 
 
