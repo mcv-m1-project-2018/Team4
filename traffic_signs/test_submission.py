@@ -1,5 +1,6 @@
 import fnmatch
 import os
+import pickle
 import imageio
 from evaluation.load_annotations import load_annotations
 import evaluation.evaluation_funcs as evalf
@@ -9,9 +10,9 @@ import evaluation.evaluation_funcs as evalf
 # This is just to see if there's any problem with files, paths, permissions, etc. *'
 
 # Configure this
-team              = 0  % Your team number
-week              = 1  % Week number
-window_evaluation = 1  % Whether to perform or not window evaluation: 0 for week 1, 1 for week 2
+team              = 0  # Your team number
+week              = 1  # Week number
+window_evaluation = 1  # Whether to perform or not window evaluation: 0 for week 1, 1 for week 2
 
 
 #Do not make changes below this point ---------------------------------
@@ -19,15 +20,20 @@ window_evaluation = 1  % Whether to perform or not window evaluation: 0 for week
 
 
 # This folder contains fake masks and text annotations. Do not change this.
-test_dir   = '/home/mcv00/DataSet/fake_test/'  
+test_dir   = '/home/mcv00/DataSet1/fake_test/'  
+
+# This folder contains your results: mask imaged and window list pkl files. Do not change this.
+results_dir = '/home/mcv{:02d}/m1-results/week{}/test'.format(team, week)
+
+test_dir = '../../../../prova'
+results_dir = './aaa'
 
 # Load image names in the given directory
-test_files = sorted(fnmatch.filter(os.listdir(test_dir), '*.png'))
+test_files = sorted(fnmatch.filter(os.listdir(test_dir), '*.jpg'))
 
 test_files_num = len(test_files)
 
-
-results_dir = '/home/mcv{:02d}/m1-results/week{}/test'.format(team, week)
+print ('TP01')
 
 pixelTP  = 0
 pixelFN  = 0
@@ -40,7 +46,9 @@ windowFP = 0
 # List all folders (corresponding to the different methods) in the results directory
 methods = next(os.walk(results_dir))[1]
 
+
 for method in methods:
+    print ('Method: {}\n'.format(method))
 
     result_files = sorted(fnmatch.filter(os.listdir('{}/{}'.format(results_dir, method)), '*.png'))
 
@@ -54,6 +62,8 @@ for method in methods:
 
         # Read mask file
         candidate_masks_name = '{}/{}/{}'.format(results_dir, method, result_files[ii])
+        print ('File: {}'.format(candidate_masks_name))
+        
         pixelCandidates = imageio.imread(candidate_masks_name)>0
         
         # Accumulate pixel performance of the current image %%%%%%%%%%%%%%%%%
@@ -89,10 +99,10 @@ for method in methods:
     [pixelPrecision, pixelAccuracy, pixelSpecificity, pixelSensitivity] = evalf.performance_evaluation_pixel(pixelTP, pixelFP, pixelFN, pixelTN)
     pixelF1 = 2*((pixelPrecision*pixelSensitivity)/(pixelPrecision + pixelSensitivity))
 
-    printf ('Team {:02d} pixel, method {} : {:.2f}, {:.2f}, {:.2f}\n'.format(team, method, pixelPrecision, pixelSensitivity, pixelF1))      
+    print ('Team {:02d} pixel, method {} : {:.2f}, {:.2f}, {:.2f}\n'.format(team, method, pixelPrecision, pixelSensitivity, pixelF1))      
 
     if window_evaluation == 1:
-        [windowPrecision, windowSensitivity, windowAccuracy] = evalf.performance_evaluation_window(windowTP, windowFN, windowFP) % (Needed after Week 3)
+        [windowPrecision, windowSensitivity, windowAccuracy] = evalf.performance_evaluation_window(windowTP, windowFN, windowFP) # (Needed after Week 3)
         windowF1 = 0
 
-        printf ('Team {:02d} window, method {} : {:.2f}, {:.2f}, {:.2f}\n'.format(team, methods(kk).name, windowPrecision, windowSensitivity, windowF1)) 
+        print ('Team {:02d} window, method {} : {:.2f}, {:.2f}, {:.2f}\n'.format(team, method, windowPrecision, windowSensitivity, windowF1)) 
