@@ -9,12 +9,15 @@ Options:
 """
 
 
-from docopt import docopt
-import numpy as np
 import fnmatch
 import os
 import sys
+import pickle
+
+import numpy as np
 import imageio
+from docopt import docopt
+
 from candidate_generation_pixel import candidate_generation_pixel
 from candidate_generation_window import candidate_generation_window
 from evaluation.load_annotations import load_annotations
@@ -53,14 +56,14 @@ def traffic_sign_detection(directory, output_dir, pixel_method, window_method):
         if not os.path.exists(fd):
             os.makedirs(fd)
         
-        out_mask_name = '{}.png'.format(fd, base)
+        out_mask_name = '{}/{}.png'.format(fd, base)
         imageio.imwrite (out_mask_name, np.uint8(np.round(pixel_candidates)))
 
         
         if window_method != 'None':
             window_candidates = candidate_generation_window(im, pixel_candidates, window_method) 
 
-            out_list_name = '{}.pkl'.format(fd, base)
+            out_list_name = '{}/{}.pkl'.format(fd, base)
             
             with open(out_list_name, "wb") as fp:   #Pickling
                 pickle.dump(window_candidates, fp)
