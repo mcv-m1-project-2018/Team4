@@ -59,7 +59,14 @@ def traffic_sign_detection(directory, output_dir, pixel_method, window_method):
         
         if window_method != 'None':
             window_candidates = candidate_generation_window(im, pixel_candidates, window_method) 
-        
+
+            out_list_name = '{}.pkl'.format(fd, base)
+            
+            with open(out_list_name, "wb") as fp:   #Pickling
+                pickle.dump(window_candidates, fp)
+                      
+            
+
         # Accumulate pixel performance of the current image #################
         pixel_annotation = imageio.imread('{}/mask/mask.{}.png'.format(directory,base)) > 0
 
@@ -75,6 +82,7 @@ def traffic_sign_detection(directory, output_dir, pixel_method, window_method):
             # Accumulate object performance of the current image ################
             window_annotationss = load_annotations('{}/gt/gt.{}.txt'.format(directory, base))
             [localWindowTP, localWindowFN, localWindowFP] = evalf.performance_accumulation_window(window_candidates, window_annotationss)
+
             windowTP = windowTP + localWindowTP
             windowFN = windowFN + localWindowFN
             windowFP = windowFP + localWindowFP
