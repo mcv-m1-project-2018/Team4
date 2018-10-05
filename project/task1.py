@@ -51,7 +51,17 @@ def task_1(dataset_path):
 
     """
     computed_values = []
+    dataset = []
 
+    # initiating dataset grouped in classes, containing separate datasets for each class
+    datasetA =[]
+    datasetB =[]
+    datasetC =[]
+    datasetD =[]
+    datasetE =[]
+    datasetF =[]
+    dataset_grouped = [datasetA,datasetB,datasetC,datasetD,datasetE,datasetF]
+    
     # This 'for' iterates within the train dataset
 
     for filename in os.listdir(dataset_path):
@@ -88,11 +98,12 @@ def task_1(dataset_path):
                 filling_ratio = size/(crop.shape[1]*crop.shape[0])
 
                 computed_values.append([bounding_box[4], size, form_factor, filling_ratio])
+                dataset.append([bounding_box[4],img,mask,bounding_boxes])
+
 
     # computed_values has the following structure: [class_id, size, form _factor, filling_ratio]
 
     computed_values = np.asarray(computed_values)
-
     frequencies = []
     form_factor_avg = []
     filling_ratio_avg = []
@@ -112,8 +123,61 @@ def task_1(dataset_path):
         max_size.append(np.amax(split_by_classes_float[:, 0]))
         min_size.append(np.amin(split_by_classes_float[:, 0]))
 
+    # Split the whole dataset array into classes and put them into one big array
+    for index in range(0, len(dataset)):
+        for class_id in ["A", "B", "C", "D", "E", "F"]:
+            if (dataset[index][0] == class_id):
+                dataset_grouped[["A", "B", "C", "D", "E", "F"].index(class_id)].append(dataset[index])
+
     output = [frequencies, form_factor_avg, filling_ratio_avg, max_size, min_size]
     print(output)
+
+    return dataset_grouped, frequencies
+
+def task2 (dataset_grouped, frequencies):
+    """
+    This function splits dataset into training and validation dataset in proportion 7:3
+    proportionally with regard to image shapes and colors (i.e. classes).
+
+    :return:
+        output: dataset_train and dataset_valid, Python lists that contain 6 rows with columns of images, masks and data
+    """
+
+    train_set_ratio = 0.7
+    frequencies_train = np.asarray(frequencies) * train_set_ratio
+
+    # initiate dataset train, containing separate datasets for each class
+    dataset_trainA =[]
+    dataset_trainB =[]
+    dataset_trainC =[]
+    dataset_trainD =[]
+    dataset_trainE =[]
+    dataset_trainF =[]
+    dataset_train = [dataset_trainA,dataset_trainB,dataset_trainC,dataset_trainD,dataset_trainE,dataset_trainF]
+    
+    # initiate dataset valid, containing separate datasets for each class
+    dataset_validA =[]
+    dataset_validB =[]
+    dataset_validC =[]
+    dataset_validD =[]
+    dataset_validE =[]
+    dataset_validF =[]
+    dataset_valid = [dataset_validA,dataset_validB,dataset_validC,dataset_validD,dataset_validE,dataset_validF] 
+
+    # Here we split the datasets for each class in proportions 7:3
+    for class_id in range(0, len(dataset_grouped)):
+        for index in range (0, len(dataset_grouped[class_id])):
+            if (index < frequencies_train[class_id]):
+                dataset_train[class_id].append(dataset_grouped[class_id][index])
+            else:
+                dataset_valid[class_id].append(dataset_grouped[class_id][index])
+    return dataset_train, dataset_valid
+
+    # uncomment to print number of signals for train and validation from 
+    # class A, and to print frequency of A class signals in the whole dataset
+    # print(len(dataset_train[0]))
+    # print(len(dataset_valid[0]))
+    # print(frequencies[0])
 
 
 if __name__ == "__main__":
@@ -126,7 +190,6 @@ if __name__ == "__main__":
 
     file_path = Path(__file__).parent.absolute()
     dataset_path = str(file_path / Path(args["dataset_path"]))
-
-    task_1(dataset_path)
-
-
+    # executing tasks:
+    dataset_grouped, frequencies = task_1(dataset_path)
+    task2(dataset_grouped, frequencies)
