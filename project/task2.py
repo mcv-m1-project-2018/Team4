@@ -1,7 +1,11 @@
 import numpy as np
 from sklearn.model_selection import train_test_split
 
+<<<<<<< HEAD
 def dataset_split(dataset_grouped, test_set_ratio=0.3):
+=======
+def split_proportionally (dataset_grouped, frequencies, train_set_ratio=0.7):
+>>>>>>> 090babd7fffc9a8d5ec5d84d07286959fb759377
     """
     This function splits dataset into training and validation dataset in proportion 7:3
     proportionally with regard to image shapes and colors (i.e. classes).
@@ -9,6 +13,11 @@ def dataset_split(dataset_grouped, test_set_ratio=0.3):
     :return:
         output: dataset_train and dataset_valid, Python lists that contain 6 rows with columns of images, masks and data
     """
+<<<<<<< HEAD
+=======
+    frequencies_train = np.asarray(frequencies) * train_set_ratio
+
+>>>>>>> 090babd7fffc9a8d5ec5d84d07286959fb759377
     # initiate dataset train, containing separate datasets for each class
     dataset_trainA =[]
     dataset_trainB =[]
@@ -38,3 +47,4 @@ def dataset_split(dataset_grouped, test_set_ratio=0.3):
     # print(len(dataset_train[0]))
     # print(len(dataset_valid[0]))
     # print(frequencies[0])
+    

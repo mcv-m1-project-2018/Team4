@@ -16,13 +16,18 @@ import task2
 if __name__ == "__main__":
 
     ap = argparse.ArgumentParser()
-    ap.add_argument("-dp", "--dataset_path", required=True,
-                    help="Dataset path, it should be at the same level as task1.py")
+    ap.add_argument("-dp", "--dataset_path", required=False, default="train",
+                    help="Dataset path, by default it should be at the same level as task1.py")
 
     args = vars(ap.parse_args())
 
     file_path = Path(__file__).parent.absolute()
     dataset_path = str(file_path / Path(args["dataset_path"]))
     # executing tasks:
+<<<<<<< HEAD
     dataset_grouped = task1.calculate_characteristics(dataset_path)
     dataset_train, dataset_valid = task2.dataset_split(dataset_grouped, 0.3)
+=======
+    dataset_grouped, frequencies = task1.calculate_characteristics(dataset_path)
+    task2.split_proportionally(dataset_grouped, frequencies)
+>>>>>>> 090babd7fffc9a8d5ec5d84d07286959fb759377
