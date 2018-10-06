@@ -126,4 +126,4 @@ def calculate_characteristics(dataset_path, classes_array=["A", "B", "C", "D", "
     output = [frequencies, form_factor_avg, filling_ratio_avg, max_size, min_size]
     print(output)
 
-    return dataset_grouped, frequencies
+    return dataset_grouped
