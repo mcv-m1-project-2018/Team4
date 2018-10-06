@@ -32,7 +32,7 @@ def calc_size(crop):
 
 
 
-def task_1(dataset_path):
+def calculate_characteristics(dataset_path, classes_array=["A", "B", "C", "D", "E", "F"]):
     """
     Determine the characteristics of the signals in the training set: max and min
     size, form factor, filling ratio of each type of signal, frequency of appearance (using
@@ -105,7 +105,7 @@ def task_1(dataset_path):
     min_size = []
 
     # Compute the final values for each class and fill the output with them
-    for class_id in ["A", "B", "C", "D", "E", "F"]:
+    for class_id in classes_array:
         split_by_classes = computed_values[(computed_values[:, 0] == class_id)]
 
         frequencies.append(len(split_by_classes))
@@ -119,9 +119,9 @@ def task_1(dataset_path):
 
     # Split the whole dataset array into classes and put them into one big array
     for index in range(0, len(dataset)):
-        for class_id in ["A", "B", "C", "D", "E", "F"]:
+        for class_id in classes_array:
             if (dataset[index][0] == class_id):
-                dataset_grouped[["A", "B", "C", "D", "E", "F"].index(class_id)].append(dataset[index])
+                dataset_grouped[classes_array.index(class_id)].append(dataset[index])
 
     output = [frequencies, form_factor_avg, filling_ratio_avg, max_size, min_size]
     print(output)
