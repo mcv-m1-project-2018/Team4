@@ -1,16 +1,9 @@
-"""
-To execute this script you should do the following:
-
-python task1.py --dataset_path train
-
-Taking into account that dir train must be at the same level as task1.py
-"""
-
-import argparse
 import cv2
 import os
 from pathlib import Path
 import numpy as np
+
+
 
 IMG_EXTENSIONS = [
     '.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.tif', '.tiff'
@@ -36,6 +29,7 @@ def read_gt(dataset_path, filename):
 # Calculate the size by counting the amount of white pixels
 def calc_size(crop):
     return cv2.countNonZero(cv2.cvtColor(crop, cv2.COLOR_BGR2GRAY))
+
 
 
 def task_1(dataset_path):
@@ -133,63 +127,3 @@ def task_1(dataset_path):
     print(output)
 
     return dataset_grouped, frequencies
-
-def task2 (dataset_grouped, frequencies):
-    """
-    This function splits dataset into training and validation dataset in proportion 7:3
-    proportionally with regard to image shapes and colors (i.e. classes).
-
-    :return:
-        output: dataset_train and dataset_valid, Python lists that contain 6 rows with columns of images, masks and data
-    """
-
-    train_set_ratio = 0.7
-    frequencies_train = np.asarray(frequencies) * train_set_ratio
-
-    # initiate dataset train, containing separate datasets for each class
-    dataset_trainA =[]
-    dataset_trainB =[]
-    dataset_trainC =[]
-    dataset_trainD =[]
-    dataset_trainE =[]
-    dataset_trainF =[]
-    dataset_train = [dataset_trainA,dataset_trainB,dataset_trainC,dataset_trainD,dataset_trainE,dataset_trainF]
-    
-    # initiate dataset valid, containing separate datasets for each class
-    dataset_validA =[]
-    dataset_validB =[]
-    dataset_validC =[]
-    dataset_validD =[]
-    dataset_validE =[]
-    dataset_validF =[]
-    dataset_valid = [dataset_validA,dataset_validB,dataset_validC,dataset_validD,dataset_validE,dataset_validF] 
-
-    # Here we split the datasets for each class in proportions 7:3
-    for class_id in range(0, len(dataset_grouped)):
-        for index in range (0, len(dataset_grouped[class_id])):
-            if (index < frequencies_train[class_id]):
-                dataset_train[class_id].append(dataset_grouped[class_id][index])
-            else:
-                dataset_valid[class_id].append(dataset_grouped[class_id][index])
-    return dataset_train, dataset_valid
-
-    # uncomment to print number of signals for train and validation from 
-    # class A, and to print frequency of A class signals in the whole dataset
-    # print(len(dataset_train[0]))
-    # print(len(dataset_valid[0]))
-    # print(frequencies[0])
-
-
-if __name__ == "__main__":
-
-    ap = argparse.ArgumentParser()
-    ap.add_argument("-dp", "--dataset_path", required=True,
-                    help="Dataset path, it should be at the same level as task1.py")
-
-    args = vars(ap.parse_args())
-
-    file_path = Path(__file__).parent.absolute()
-    dataset_path = str(file_path / Path(args["dataset_path"]))
-    # executing tasks:
-    dataset_grouped, frequencies = task_1(dataset_path)
-    task2(dataset_grouped, frequencies)
