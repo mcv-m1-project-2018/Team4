@@ -1,6 +1,6 @@
 import numpy as np
 
-def task2 (dataset_grouped, frequencies):
+def split_proportionally (dataset_grouped, frequencies, train_set_ratio=0.7):
     """
     This function splits dataset into training and validation dataset in proportion 7:3
     proportionally with regard to image shapes and colors (i.e. classes).
@@ -8,8 +8,6 @@ def task2 (dataset_grouped, frequencies):
     :return:
         output: dataset_train and dataset_valid, Python lists that contain 6 rows with columns of images, masks and data
     """
-
-    train_set_ratio = 0.7
     frequencies_train = np.asarray(frequencies) * train_set_ratio
 
     # initiate dataset train, containing separate datasets for each class

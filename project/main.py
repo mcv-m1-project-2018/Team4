@@ -24,5 +24,5 @@ if __name__ == "__main__":
     file_path = Path(__file__).parent.absolute()
     dataset_path = str(file_path / Path(args["dataset_path"]))
     # executing tasks:
-    dataset_grouped, frequencies = task1.task_1(dataset_path)
-    task2.task2(dataset_grouped, frequencies)
+    dataset_grouped, frequencies = task1.calculate_characteristics(dataset_path)
+    task2.split_proportionally(dataset_grouped, frequencies)
