@@ -61,9 +61,19 @@ def calculate_characteristics(dataset_path, classes_array=["A", "B", "C", "D", "
     for filename in os.listdir(dataset_path):
 
         if is_image_file(filename):
-
             # Read the image, mask and gt corresponding to certain filename
             img = cv2.imread(str(Path(dataset_path) / Path(filename)))
+            img_out = np.zeros(img.shape, dtype=img.dtype)
+            clahe = cv2.createCLAHE(clipLimit=2, tileGridSize=(8,8))
+
+            #uncomment to apply equilization of histograms
+            # eqR = clahe.apply(img[:,:,0])
+            # eqG = clahe.apply(img[:,:,1])
+            # eqB = clahe.apply(img[:,:,2])
+            # img_out[:,:,0] = eqR
+            # img_out[:,:,1] = eqG
+            # img_out[:,:,2] = eqB
+            # img = img_out
             mask = read_mask(dataset_path, Path(filename))
             bounding_boxes = read_gt(Path(dataset_path), Path(filename))
 
@@ -126,4 +136,4 @@ def calculate_characteristics(dataset_path, classes_array=["A", "B", "C", "D", "
     output = [frequencies, form_factor_avg, filling_ratio_avg, max_size, min_size]
     print(output)
 
-    return dataset_grouped
+    return dataset_grouped, dataset

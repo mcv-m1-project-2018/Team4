@@ -11,6 +11,7 @@ import argparse
 from pathlib import Path
 import task1
 import task2
+import histogram_analysis_method
 
 
 if __name__ == "__main__":
@@ -24,5 +25,9 @@ if __name__ == "__main__":
     file_path = Path(__file__).parent.absolute()
     dataset_path = str(file_path / Path(args["dataset_path"]))
     # executing tasks:
-    dataset_grouped = task1.calculate_characteristics(dataset_path)
+    dataset_grouped, dataset = task1.calculate_characteristics(dataset_path)
     dataset_train, dataset_valid = task2.dataset_split(dataset_grouped, 0.3)
+    # The following line is optional, exporting histogram for: 
+    # training dataset signs if (dataset, 0)
+    # training dataset signs in separate classes if (dataset_grouped, 1)
+    histogram_analysis_method.analyse_obj_hist(dataset, 0)
