@@ -11,6 +11,7 @@ import cv2
 import os
 from pathlib import Path
 import numpy as np
+from matplotlib import pyplot as plt
 
 IMG_EXTENSIONS = [
     '.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.tif', '.tiff'
@@ -32,6 +33,7 @@ def read_gt(dataset_path, filename):
     with open(str(dataset_path / "gt" / Path("gt." + filename.stem + ".txt")), 'r') as file:
         bounding_boxes = [line.split() for line in file]
     return bounding_boxes
+
 
 # Calculate the size by counting the amount of white pixels
 def calc_size(crop):
@@ -78,7 +80,7 @@ def task_1(dataset_path):
 
             # Uncomment to see the patch from the image corresponding to the no zero values in the mask
             # final_mask = cv2.bitwise_and(img, bin_mask)
-            # cv2.imshow('Final mask', final_mask)
+            # cv2.imshow('Final mask', bin_mask)
             # cv2.waitKey(0)
             # cv2.destroyAllWindows()
 
@@ -98,7 +100,7 @@ def task_1(dataset_path):
                 filling_ratio = size/(crop.shape[1]*crop.shape[0])
 
                 computed_values.append([bounding_box[4], size, form_factor, filling_ratio])
-                dataset.append([bounding_box[4],img,mask,bounding_boxes])
+                dataset.append([bounding_box[4],img,mask,coordinates])
 
 
     # computed_values has the following structure: [class_id, size, form _factor, filling_ratio]
@@ -162,7 +164,7 @@ def task2 (dataset_grouped, frequencies):
     dataset_validD =[]
     dataset_validE =[]
     dataset_validF =[]
-    dataset_valid = [dataset_validA,dataset_validB,dataset_validC,dataset_validD,dataset_validE,dataset_validF] 
+    dataset_valid = [dataset_validA,dataset_validB,dataset_validC,dataset_validD,dataset_validE,dataset_validF]
 
     # Here we split the datasets for each class in proportions 7:3
     for class_id in range(0, len(dataset_grouped)):
@@ -177,7 +179,37 @@ def task2 (dataset_grouped, frequencies):
     # class A, and to print frequency of A class signals in the whole dataset
     # print(len(dataset_train[0]))
     # print(len(dataset_valid[0]))
-    # print(frequencies[0])
+    # print(frequencies[0])ç
+
+
+def task_3(dataset_train, dataset_valid):
+
+    for class_id in range(6):
+        data = dataset_valid[class_id][:]
+        for n in data:
+            img = n[1]
+            gt_mask = n[2]
+            gt_bounding_boxes = n[3]
+            cv2.imshow(' mask', gt_mask)
+            cv2.waitKey(0)
+            cv2.destroyAllWindows()
+            imgHSV = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+            maskHSV_red1 = cv2.inRange(imgHSV, np.array([0, 70, 0]), np.array([10, 255, 255]))
+            maskHSV_red2 = cv2.inRange(imgHSV, np.array([160, 70, 0]), np.array([179, 255, 255]))
+
+            maskHSV_blue = cv2.inRange(imgHSV, np.array([100, 70, 0]), np.array([140, 255, 255]))
+
+            maskHSV_blue[maskHSV_blue == 255] = 127
+
+            maskHSV_red = cv2.bitwise_or(maskHSV_red1, maskHSV_red2)
+            mask_final = cv2.bitwise_or(maskHSV_blue, maskHSV_red)
+            kernel = np.ones((3, 3), np.uint8)
+            erosion = cv2.erode(mask_final, kernel, iterations=2)
+            dilated = cv2.dilate(erosion, kernel, iterations=1)
+
+            cv2.imshow('Final mask', dilated)
+            cv2.waitKey(0)
+            cv2.destroyAllWindows()
 
 
 if __name__ == "__main__":
@@ -192,4 +224,6 @@ if __name__ == "__main__":
     dataset_path = str(file_path / Path(args["dataset_path"]))
     # executing tasks:
     dataset_grouped, frequencies = task_1(dataset_path)
-    task2(dataset_grouped, frequencies)
+    dataset_train, dataset_valid = task2(dataset_grouped, frequencies)
+    # compute_color_spaces_avg(dataset_train)
+    task_3(dataset_train, dataset_valid)
