@@ -1,0 +1,10 @@
+*.jpg
+*.txt
+*.png
+
+settings.json
+.DS_Store
+
+*.pyc
+*.tar
+outMask*
