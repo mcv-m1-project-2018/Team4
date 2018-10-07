@@ -1,17 +1,11 @@
-"""
-To execute this script you should do the following:
-
-python task1.py --dataset_path train
-
-Taking into account that dir train must be at the same level as task1.py
-"""
-
-import argparse
 import cv2
 import os
 from pathlib import Path
 import numpy as np
+import argparse
 from matplotlib import pyplot as plt
+
+
 
 IMG_EXTENSIONS = [
     '.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.tif', '.tiff'
@@ -40,7 +34,8 @@ def calc_size(crop):
     return cv2.countNonZero(cv2.cvtColor(crop, cv2.COLOR_BGR2GRAY))
 
 
-def task_1(dataset_path):
+
+def calculate_characteristics(dataset_path, classes_array=["A", "B", "C", "D", "E", "F"]):
     """
     Determine the characteristics of the signals in the training set: max and min
     size, form factor, filling ratio of each type of signal, frequency of appearance (using
@@ -69,9 +64,19 @@ def task_1(dataset_path):
     for filename in os.listdir(dataset_path):
 
         if is_image_file(filename):
-
             # Read the image, mask and gt corresponding to certain filename
             img = cv2.imread(str(Path(dataset_path) / Path(filename)))
+            img_out = np.zeros(img.shape, dtype=img.dtype)
+            clahe = cv2.createCLAHE(clipLimit=2, tileGridSize=(8,8))
+
+            #uncomment to apply equilization of histograms
+            # eqR = clahe.apply(img[:,:,0])
+            # eqG = clahe.apply(img[:,:,1])
+            # eqB = clahe.apply(img[:,:,2])
+            # img_out[:,:,0] = eqR
+            # img_out[:,:,1] = eqG
+            # img_out[:,:,2] = eqB
+            # img = img_out
             mask = read_mask(dataset_path, Path(filename))
             bounding_boxes = read_gt(Path(dataset_path), Path(filename))
 
@@ -113,7 +118,7 @@ def task_1(dataset_path):
     min_size = []
 
     # Compute the final values for each class and fill the output with them
-    for class_id in ["A", "B", "C", "D", "E", "F"]:
+    for class_id in classes_array:
         split_by_classes = computed_values[(computed_values[:, 0] == class_id)]
 
         frequencies.append(len(split_by_classes))
@@ -127,9 +132,9 @@ def task_1(dataset_path):
 
     # Split the whole dataset array into classes and put them into one big array
     for index in range(0, len(dataset)):
-        for class_id in ["A", "B", "C", "D", "E", "F"]:
+        for class_id in classes_array:
             if (dataset[index][0] == class_id):
-                dataset_grouped[["A", "B", "C", "D", "E", "F"].index(class_id)].append(dataset[index])
+                dataset_grouped[classes_array.index(class_id)].append(dataset[index])
 
     output = [frequencies, form_factor_avg, filling_ratio_avg, max_size, min_size]
     print(output)
@@ -223,7 +228,8 @@ if __name__ == "__main__":
     file_path = Path(__file__).parent.absolute()
     dataset_path = str(file_path / Path(args["dataset_path"]))
     # executing tasks:
-    dataset_grouped, frequencies = task_1(dataset_path)
+    dataset_grouped, frequencies = calculate_characteristics(dataset_path)
     dataset_train, dataset_valid = task2(dataset_grouped, frequencies)
     # compute_color_spaces_avg(dataset_train)
     task_3(dataset_train, dataset_valid)
+
