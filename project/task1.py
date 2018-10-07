@@ -3,8 +3,11 @@ import os
 from pathlib import Path
 import numpy as np
 import argparse
+<<<<<<< HEAD
 # from matplotlib import pyplot as plt
 
+=======
+>>>>>>> 303e7c32116274a68ac2af2d2db96f9d83170295
 
 
 IMG_EXTENSIONS = [
@@ -186,6 +189,7 @@ def task2 (dataset_grouped, frequencies):
     # print(len(dataset_valid[0]))
     # print(frequencies[0])ç
 
+<<<<<<< HEAD
 def save_dataset(dataset, directory):
     index = 0
     for class_id in range(len(dataset_grouped)):
@@ -196,7 +200,153 @@ def save_dataset(dataset, directory):
             mask = cv2.cvtColor(element[2], cv2.COLOR_BGR2GRAY)
             cv2.imwrite(filename_mask, mask)
             index+=1
+=======
 
+def task_3(dataset_train, dataset_valid):
+    output_final= []
+    benchmark = []
+
+    for class_id in range(6):
+        data = dataset_valid[class_id][:]
+        for idx, n in enumerate(data):
+            img = n[1]
+            gt_mask = n[2]
+            gt_bounding_boxes = n[3]
+            # cv2.imshow(' mask', gt_mask)
+            # cv2.waitKey(0)
+            # cv2.destroyAllWindows()
+            imgHSV = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+            maskHSV_red1 = cv2.inRange(imgHSV, np.array([0, 70, 0]), np.array([10, 255, 255]))
+            maskHSV_red2 = cv2.inRange(imgHSV, np.array([160, 70, 0]), np.array([179, 255, 255]))
+
+            maskHSV_blue = cv2.inRange(imgHSV, np.array([100, 70, 0]), np.array([140, 255, 255]))
+
+            # maskHSV_blue[maskHSV_blue == 255] = 127
+
+            maskHSV_red = cv2.bitwise_or(maskHSV_red1, maskHSV_red2)
+            mask_final = cv2.bitwise_or(maskHSV_blue, maskHSV_red)
+            kernel = np.ones((3, 3), np.uint8)
+            erosion = cv2.erode(mask_final, kernel, iterations=3)
+            dilated = cv2.dilate(erosion, kernel, iterations=2)
+
+            # Connected components
+            ret, labels, stats, centroid = cv2.connectedComponentsWithStats(dilated, connectivity=4)
+            sizes = stats[1:, -1]
+            ret = ret-1
+
+            min_size = 200
+
+            img_noSmall = labels.copy()
+
+            for i in range(0, ret):
+                if sizes[i] <= min_size:
+                    img_noSmall[labels == i + 1] = 0
+
+            label_hue = np.uint8(179 * img_noSmall / np.max(img_noSmall))
+            blank_ch = 255 * np.ones_like(label_hue)
+            labeled_img = cv2.merge([label_hue, blank_ch, blank_ch])
+
+            # cvt to BGR for display
+            labeled_img = cv2.cvtColor(labeled_img, cv2.COLOR_HSV2BGR)
+
+            # set bg label to black
+            labeled_img[label_hue == 0] = 0
+
+            # cv2.imshow('labeled.png', labeled_img)
+            # cv2.waitKey()
+
+            """finish connected components"""
+            output = [img, gt_mask, labeled_img, gt_bounding_boxes]
+
+            output_final.append(output)
+
+            gt_mask =cv2.cvtColor(gt_mask, cv2.COLOR_BGR2GRAY)
+
+            [pixelTP, pixelFP, pixelFN, pixelTN] = performance_accumulation_pixel(dilated, gt_mask)
+            [pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity] = performance_evaluation_pixel(pixelTP, pixelFP, pixelFN, pixelTN)
+            #print(pixel_precision)
+
+            benchmark.append([pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity])
+
+            # cv2.imshow('Final mask',labeled_img)
+            # cv2.waitKey(0)
+            # cv2.destroyAllWindows()
+    benchmark = np.asarray(benchmark)
+    print((benchmark[:][0]).mean())
+
+    return output_final
+
+
+def performance_accumulation_pixel(pixel_candidates, pixel_annotation):
+    """
+    performance_accumulation_pixel()
+
+    Function to compute different performance indicators
+    (True Positive, False Positive, False Negative, True Negative)
+    at the pixel level
+
+    [pixelTP, pixelFP, pixelFN, pixelTN] = performance_accumulation_pixel(pixel_candidates, pixel_annotation)
+
+    Parameter name      Value
+    --------------      -----
+    'pixel_candidates'   Binary image marking the detected areas
+    'pixel_annotation'   Binary image containing ground truth
+
+    The function returns the number of True Positive (pixelTP), False Positive (pixelFP),
+    False Negative (pixelFN) and True Negative (pixelTN) pixels in the image pixel_candidates
+    """
+
+    pixel_candidates = np.uint64(pixel_candidates > 0)
+    pixel_annotation = np.uint64(pixel_annotation > 0)
+
+    pixelTP = np.sum(pixel_candidates & pixel_annotation)
+    pixelFP = np.sum(pixel_candidates & (pixel_annotation == 0))
+    pixelFN = np.sum((pixel_candidates == 0) & pixel_annotation)
+    pixelTN = np.sum((pixel_candidates == 0) & (pixel_annotation == 0))
+
+    return [pixelTP, pixelFP, pixelFN, pixelTN]
+
+
+def performance_evaluation_pixel(pixelTP, pixelFP, pixelFN, pixelTN):
+    """
+    performance_evaluation_pixel()
+
+    Function to compute different performance indicators (Precision, accuracy,
+    specificity, sensitivity) at the pixel level
+
+    [pixelPrecision, pixelAccuracy, pixelSpecificity, pixelSensitivity] = PerformanceEvaluationPixel(pixelTP, pixelFP, pixelFN, pixelTN)
+
+       Parameter name      Value
+       --------------      -----
+       'pixelTP'           Number of True  Positive pixels
+       'pixelFP'           Number of False Positive pixels
+       'pixelFN'           Number of False Negative pixels
+       'pixelTN'           Number of True  Negative pixels
+
+    The function returns the precision, accuracy, specificity and sensitivity
+    """
+    if (pixelTP + pixelFP) == 0 :
+        pixel_precision = 0
+    else:
+        pixel_precision = float(pixelTP) / float(pixelTP + pixelFP)
+
+    if (pixelTP + pixelFP + pixelFN + pixelTN) == 0:
+        pixel_accuracy = 0
+    else:
+        pixel_accuracy = float(pixelTP + pixelTN) / float(pixelTP + pixelFP + pixelFN + pixelTN)
+
+    if(pixelTN + pixelFP) == 0:
+        pixel_specificity = 0
+    else:
+        pixel_specificity = float(pixelTN) / float(pixelTN + pixelFP)
+
+    if (pixelTP + pixelFN) == 0:
+        pixel_sensitivity =0
+    else:
+        pixel_sensitivity = float(pixelTP) / float(pixelTP + pixelFN)
+>>>>>>> 303e7c32116274a68ac2af2d2db96f9d83170295
+
+    return [pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity]
 
 if __name__ == "__main__":
 
@@ -214,4 +364,5 @@ if __name__ == "__main__":
     save_dataset(dataset_valid, "valid")
     # compute_color_spaces_avg(dataset_train)
     task_3(dataset_train, dataset_valid)
+    # traffic_sign_detection()
 
