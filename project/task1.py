@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 import numpy as np
 import argparse
-from matplotlib import pyplot as plt
+# from matplotlib import pyplot as plt
 
 
 
@@ -186,35 +186,16 @@ def task2 (dataset_grouped, frequencies):
     # print(len(dataset_valid[0]))
     # print(frequencies[0])ç
 
-
-def task_3(dataset_train, dataset_valid):
-
-    for class_id in range(6):
-        data = dataset_valid[class_id][:]
-        for n in data:
-            img = n[1]
-            gt_mask = n[2]
-            gt_bounding_boxes = n[3]
-            cv2.imshow(' mask', gt_mask)
-            cv2.waitKey(0)
-            cv2.destroyAllWindows()
-            imgHSV = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-            maskHSV_red1 = cv2.inRange(imgHSV, np.array([0, 70, 0]), np.array([10, 255, 255]))
-            maskHSV_red2 = cv2.inRange(imgHSV, np.array([160, 70, 0]), np.array([179, 255, 255]))
-
-            maskHSV_blue = cv2.inRange(imgHSV, np.array([100, 70, 0]), np.array([140, 255, 255]))
-
-            maskHSV_blue[maskHSV_blue == 255] = 127
-
-            maskHSV_red = cv2.bitwise_or(maskHSV_red1, maskHSV_red2)
-            mask_final = cv2.bitwise_or(maskHSV_blue, maskHSV_red)
-            kernel = np.ones((3, 3), np.uint8)
-            erosion = cv2.erode(mask_final, kernel, iterations=2)
-            dilated = cv2.dilate(erosion, kernel, iterations=1)
-
-            cv2.imshow('Final mask', dilated)
-            cv2.waitKey(0)
-            cv2.destroyAllWindows()
+def save_dataset(dataset, directory):
+    index = 0
+    for class_id in range(len(dataset_grouped)):
+        for element in dataset_grouped[class_id]:
+            filename = directory + "/00." + str(index) + ".jpg"
+            filename_mask = directory + "/mask/mask.00." + str(index) + ".png"
+            cv2.imwrite(filename, element[1])
+            mask = cv2.cvtColor(element[2], cv2.COLOR_BGR2GRAY)
+            cv2.imwrite(filename_mask, mask)
+            index+=1
 
 
 if __name__ == "__main__":
@@ -230,6 +211,7 @@ if __name__ == "__main__":
     # executing tasks:
     dataset_grouped, frequencies = calculate_characteristics(dataset_path)
     dataset_train, dataset_valid = task2(dataset_grouped, frequencies)
+    save_dataset(dataset_valid, "valid")
     # compute_color_spaces_avg(dataset_train)
     task_3(dataset_train, dataset_valid)
 
