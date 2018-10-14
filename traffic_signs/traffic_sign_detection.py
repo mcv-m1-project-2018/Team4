@@ -2,10 +2,12 @@
 # -*- coding: utf-8 -*-
 """
 Usage:
-  traffic_sign_detection.py <dirName> <outPath> <pixelMethod> [--windowMethod=<wm>] 
+  traffic_sign_detection.py <dirName> <outPath> <pixelMethod> [--windowMethod=<wm>] [--calculateMetrics] 
   traffic_sign_detection.py -h | --help
 Options:
-  --windowMethod=<wm>        Window method       [default: 'None']
+  <pixelMethod>              Method for selecting pixel candidates  ('hsv_manual', 'hsv_manual_improved', 'hsv_hist', 'hsv_hist_equal')        
+  --windowMethod=<wm>        Method for selecting window candidates       [default: None]
+  --calculateMetrics         Turn on calculating the metrics  (Leave false when generating the masks for test set)              [default: False]
 """
 
 
@@ -61,6 +63,7 @@ def traffic_sign_detection(directory, output_dir, pixel_method, window_method, c
 
         
         if window_method != 'None':
+            xx
             window_candidates = candidate_generation_window(im, pixel_candidates, window_method) 
 
             out_list_name = '{}/{}.pkl'.format(fd, base)
@@ -114,11 +117,14 @@ if __name__ == '__main__':
     images_dir = args['<dirName>']          # Directory with input images and annotations
                                             # For instance, '../../DataSetDelivered/test'
     output_dir = args['<outPath>']          # Directory where to store output masks, etc. For instance '~/m1-results/week1/test'
+    pixel_method = args['<pixelMethod>']
+    window_method = args['--windowMethod']
+    calculate_metrics = args['--calculateMetrics']
 
-    for method in {'hsv_manual', 'hsv_manual_improved', 'hsv_hist', 'hsv_hist_equal'}:
-        pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy = traffic_sign_detection(images_dir, method, method, 'None', False)
-        print(method)
-        print (pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy)
+    print ("Computing masks for pixel method: "+pixel_method+" and window method: "+ window_method + " Calculate metrics: " + str(calculate_metrics))
+
+    pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy = traffic_sign_detection(images_dir, output_dir, pixel_method, window_method, False)
+    print (pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy)
 
 
     
