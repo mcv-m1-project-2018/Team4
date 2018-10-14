@@ -92,11 +92,19 @@ def performance_evaluation_pixel(pixelTP, pixelFP, pixelFN, pixelTN):
     
     The function returns the precision, accuracy, specificity and sensitivity
     """
-    
-    pixel_precision   = float(pixelTP) / float(pixelTP+pixelFP)
-    pixel_accuracy    = float(pixelTP+pixelTN) / float(pixelTP+pixelFP+pixelFN+pixelTN)
-    pixel_specificity = float(pixelTN) / float(pixelTN+pixelFP)
-    pixel_sensitivity = float(pixelTP) / float(pixelTP+pixelFN)
+
+    pixel_precision   = 0
+    pixel_accuracy    = 0
+    pixel_specificity = 0
+    pixel_sensitivity = 0
+    if (pixelTP+pixelFP) != 0:
+        pixel_precision   = float(pixelTP) / float(pixelTP+pixelFP)
+    if (pixelTP+pixelFP+pixelFN+pixelTN) != 0:
+        pixel_accuracy    = float(pixelTP+pixelTN) / float(pixelTP+pixelFP+pixelFN+pixelTN)
+    if (pixelTN+pixelFP):
+        pixel_specificity = float(pixelTN) / float(pixelTN+pixelFP)
+    if (pixelTP+pixelFN) != 0:
+        pixel_sensitivity = float(pixelTP) / float(pixelTP+pixelFN)
 
     return [pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity]
 
@@ -121,7 +129,7 @@ def performance_evaluation_window(TP, FN, FP):
     
     precision   = float(TP) / float(TP+FP); # Q: What if i do not have TN?
     sensitivity = float(TP) / float(TP+FN)
-    accuracy    = float(TP) / float(TP+FN+FP);
+    accuracy    = float(TP) / float(TP+FN+FP)
 
     return [precision, sensitivity, accuracy]
 
