@@ -12,7 +12,7 @@ Introduction to Human and Computer Vision project code
 
 To run this code, execute the following:
 ```ssh
-python3 traffic_sign_detection.py <dataset_path> <output_masks_path> <pixel_method> [--windowMethod=<wm>] [--calculateMetrics] 
+python3 traffic_signs/traffic_sign_detection.py <dataset_path> <output_masks_path> <pixel_method> [--windowMethod=<wm>] [--calculateMetrics] 
 ```
 - <dataset_path> - path to the dataset with images
 - <output_masks_path> - where to save the output masks and windows
