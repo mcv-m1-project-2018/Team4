@@ -2,6 +2,7 @@ import cv2
 import os
 from pathlib import Path
 import numpy as np
+import argparse
 
 
 
@@ -25,6 +26,7 @@ def read_gt(dataset_path, filename):
     with open(str(dataset_path / "gt" / Path("gt." + filename.stem + ".txt")), 'r') as file:
         bounding_boxes = [line.split() for line in file]
     return bounding_boxes
+
 
 # Calculate the size by counting the amount of white pixels
 def calc_size(crop):
@@ -82,7 +84,7 @@ def calculate_characteristics(dataset_path, classes_array=["A", "B", "C", "D", "
 
             # Uncomment to see the patch from the image corresponding to the no zero values in the mask
             # final_mask = cv2.bitwise_and(img, bin_mask)
-            # cv2.imshow('Final mask', final_mask)
+            # cv2.imshow('Final mask', bin_mask)
             # cv2.waitKey(0)
             # cv2.destroyAllWindows()
 
@@ -102,7 +104,7 @@ def calculate_characteristics(dataset_path, classes_array=["A", "B", "C", "D", "
                 filling_ratio = size/(crop.shape[1]*crop.shape[0])
 
                 computed_values.append([bounding_box[4], size, form_factor, filling_ratio])
-                dataset.append([bounding_box[4],img,mask,bounding_boxes])
+                dataset.append([bounding_box[4],img,mask,coordinates])
 
 
     # computed_values has the following structure: [class_id, size, form _factor, filling_ratio]
@@ -136,4 +138,35 @@ def calculate_characteristics(dataset_path, classes_array=["A", "B", "C", "D", "
     output = [frequencies, form_factor_avg, filling_ratio_avg, max_size, min_size]
     print(output)
 
-    return dataset_grouped, dataset
+    return dataset_grouped, frequencies
+
+def save_dataset(dataset, directory):
+    index = 0
+    for class_id in range(len(dataset_grouped)):
+        for element in dataset_grouped[class_id]:
+            filename = directory + "/00." + str(index) + ".jpg"
+            filename_mask = directory + "/mask/mask.00." + str(index) + ".png"
+            cv2.imwrite(filename, element[1])
+            mask = cv2.cvtColor(element[2], cv2.COLOR_BGR2GRAY)
+            cv2.imwrite(filename_mask, mask)
+            index+=1
+
+
+if __name__ == "__main__":
+
+    ap = argparse.ArgumentParser()
+    ap.add_argument("-dp", "--dataset_path", required=True,
+                    help="Dataset path, it should be at the same level as task1.py")
+
+    args = vars(ap.parse_args())
+
+    file_path = Path(__file__).parent.absolute()
+    dataset_path = str(file_path / Path(args["dataset_path"]))
+    # executing tasks:
+    dataset_grouped, frequencies = calculate_characteristics(dataset_path)
+    dataset_train, dataset_valid = task2(dataset_grouped, frequencies)
+    save_dataset(dataset_valid, "valid")
+    # compute_color_spaces_avg(dataset_train)
+    task_3(dataset_train, dataset_valid)
+    # traffic_sign_detection()
+
