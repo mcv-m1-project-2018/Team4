@@ -11,6 +11,11 @@ Introduction to Human and Computer Vision project code
 <h2>Usage</h2>
 
 To run this code, execute the following:
-python main.py --dataset_path \<path to dataset folder\>
-
-If dataset_path argument is not specified, the dataset should be located in a folder called "train" at the same level as the main.py file.
+```ssh
+python3 traffic_sign_detection.py <dataset_path> <output_masks_path> <pixel_method> [--windowMethod=<wm>] [--calculateMetrics] 
+```
+- <dataset_path> - path to the dataset with images
+- <output_masks_path> - where to save the output masks and windows
+- <pixel_method> - select method for selecting pixel candidates
+- [--windowMethod=<wm>] - select method for selecting window candidates (optional)
+- [--calculateMetrics] - flag to turn on calculating metrics (optional)
