@@ -63,7 +63,7 @@ def traffic_sign_detection(directory, output_dir, pixel_method, window_method, c
 
         
         if window_method != 'None':
-            xx
+            
             window_candidates = candidate_generation_window(im, pixel_candidates, window_method) 
 
             out_list_name = '{}/{}.pkl'.format(fd, base)
@@ -123,10 +123,5 @@ if __name__ == '__main__':
 
     print ("Computing masks for pixel method: "+pixel_method+" and window method: "+ window_method + " Calculate metrics: " + str(calculate_metrics))
 
-    pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy = traffic_sign_detection(images_dir, output_dir, pixel_method, window_method, False)
+    pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy = traffic_sign_detection(images_dir, output_dir, pixel_method, window_method, calculate_metrics)
     print (pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy)
-
-
-    
-
-    
