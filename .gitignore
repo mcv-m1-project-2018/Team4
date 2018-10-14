@@ -2,9 +2,11 @@
 *.txt
 *.png
 
+
 settings.json
 .DS_Store
 
+*.pkl
 *.pyc
 *.tar
 outMask*
