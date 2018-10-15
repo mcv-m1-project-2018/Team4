@@ -154,5 +154,4 @@ if __name__ == '__main__':
     print(f"Processed {counter:d} images in {total_time:.2f} seconds.")
     print(f"Time per frame: {per_frame_time:.2f} seconds.")
 
-    # print (pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy)
    
