@@ -14,6 +14,7 @@ import task2
 import histogram_analysis_method
 
 
+
 if __name__ == "__main__":
 
     ap = argparse.ArgumentParser()
