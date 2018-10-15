@@ -33,7 +33,7 @@ def candidate_generation_pixel_hsv(im):
 
 def candidate_generation_pixel_hsv_manual(img):
     # convert input image to HSV color space
-    imgHSV = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    imgHSV = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
    
     maskHSV_red1 = cv2.inRange(imgHSV, np.array([0, 70, 0]), np.array([10, 255, 255]))
     maskHSV_red2 = cv2.inRange(imgHSV, np.array([160, 70, 0]), np.array([179, 255, 255]))
@@ -54,7 +54,7 @@ def candidate_generation_pixel_hsv_manual(img):
 
 def candidate_generation_pixel_hsv_manual_improved(img):
     # convert input image to HSV color space
-    imgHSV = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    imgHSV = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
     
     maskHSV_red1 = cv2.inRange(imgHSV, np.array([0, 70, 0]), np.array([10, 255, 255]))
     maskHSV_red2 = cv2.inRange(imgHSV, np.array([160, 70, 0]), np.array([179, 255, 255]))
@@ -101,7 +101,7 @@ def candidate_generation_pixel_hsv_manual_improved(img):
 
 def candidate_generation_pixel_hsv_hist(img):
     # convert input image to HSV color space
-    imgHSV = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    imgHSV = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
    
     maskHSV_red1 = cv2.inRange(imgHSV, np.array([0, 45, 45]), np.array([17, 255, 255]))
     maskHSV_red2 = cv2.inRange(imgHSV, np.array([165, 45, 45]), np.array([255, 255, 255]))
@@ -111,6 +111,9 @@ def candidate_generation_pixel_hsv_hist(img):
     maskHSV_red = cv2.bitwise_or(maskHSV_red1, maskHSV_red2)
     mask_final = cv2.bitwise_or(maskHSV_blue, maskHSV_red)
 
+    cv2.imshow("result", mask_final)
+    cv2.imshow("color", img)
+    cv2.waitKey()
     pixel_candidates = mask_final
 
     return pixel_candidates
@@ -126,7 +129,7 @@ def candidate_generation_pixel_hsv_hist_equal(img):
     img[:,:,2] = eqB
 
     # convert input image to HSV color space
-    imgHSV = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    imgHSV = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
    
     maskHSV_red1 = cv2.inRange(imgHSV, np.array([0, 70, 0]), np.array([10, 255, 255]))
     maskHSV_red2 = cv2.inRange(imgHSV, np.array([160, 70, 0]), np.array([179, 255, 255]))
