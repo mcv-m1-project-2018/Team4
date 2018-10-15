@@ -15,6 +15,7 @@ import fnmatch
 import os
 import sys
 import pickle
+import time
 
 import numpy as np
 import imageio
@@ -38,12 +39,16 @@ def traffic_sign_detection(directory, output_dir, pixel_method, window_method, c
 
     window_precision = 0
     window_accuracy  = 0
+    window_F1 = 0
+
+    counter = 0
 
     # Load image names in the given directory
     file_names = sorted(fnmatch.filter(os.listdir(directory), '*.jpg'))
 
     
     for name in file_names:
+        counter += 1
         base, extension = os.path.splitext(name)
 
         # Read file
@@ -63,7 +68,7 @@ def traffic_sign_detection(directory, output_dir, pixel_method, window_method, c
 
         
         if window_method != 'None':
-            
+
             window_candidates = candidate_generation_window(im, pixel_candidates, window_method) 
 
             out_list_name = '{}/{}.pkl'.format(fd, base)
@@ -88,8 +93,8 @@ def traffic_sign_detection(directory, output_dir, pixel_method, window_method, c
             pixelFN = pixelFN + localPixelFN
             pixelTN = pixelTN + localPixelTN
             
-            [pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity] = evalf.performance_evaluation_pixel(pixelTP, pixelFP, pixelFN, pixelTN)
-
+            # [pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, pixel_F1] = evalf.performance_evaluation_pixel(pixelTP, pixelFP, pixelFN, pixelTN)
+            
             if window_method != 'None':
                 # Accumulate object performance of the current image ################
                 window_annotationss = load_annotations('{}/gt/gt.{}.txt'.format(directory, base))
@@ -101,9 +106,26 @@ def traffic_sign_detection(directory, output_dir, pixel_method, window_method, c
 
 
                 # Plot performance evaluation
-                [window_precision, window_sensitivity, window_accuracy] = evalf.performance_evaluation_window(windowTP, windowFN, windowFP)
+                # [window_precision, window_sensitivity, window_accuracy, window_F1] = evalf.performance_evaluation_window(windowTP, windowFN, windowFP)
     
-    return [pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy]
+    if (calculate_metrics):
+        [pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, pixel_F1] = evalf.performance_evaluation_pixel(pixelTP, pixelFP, pixelFN, pixelTN)
+        print("Pixel precision: "+ str(pixel_precision))
+        print("Pixel accuracy: "+ str(pixel_accuracy))
+        print("Pixel recall: "+ str(pixel_sensitivity))
+        print("Pixel F1-measure: "+ str(pixel_F1))
+        print("Pixel TP: "+ str(pixelTP))
+        print("Pixel FP: "+ str(pixelFP))
+        print("Pixel FN: "+ str(pixelFN))
+        print("Pixel TN: "+ str(pixelTN))
+
+        if window_method != 'None':
+            [window_precision, window_sensitivity, window_accuracy, window_F1] = evalf.performance_evaluation_window(windowTP, windowFN, windowFP)
+            print("Window precision: "+ str(window_precision))
+            print("Window accuracy: "+ str(window_accuracy))
+            print("Window F1-measure: "+ str(window_F1))
+    
+    return [pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, pixel_F1, window_precision, window_accuracy, window_F1, counter]
 
 
 
@@ -122,6 +144,15 @@ if __name__ == '__main__':
     calculate_metrics = args['--calculateMetrics']
 
     print ("Computing masks for pixel method: "+pixel_method+" and window method: "+ window_method + " Calculate metrics: " + str(calculate_metrics))
+    start_time = time.time()
+    pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, pixel_F1, window_precision, window_accuracy, window_F1, counter = traffic_sign_detection(images_dir, output_dir, pixel_method, window_method, calculate_metrics)
+    total_time = time.time() - start_time
+    per_frame_time = 0
+    if counter != 0:
+        per_frame_time = total_time/counter
 
-    pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy = traffic_sign_detection(images_dir, output_dir, pixel_method, window_method, calculate_metrics)
-    print (pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy)
+    print(f"Processed {counter:d} images in {total_time:.2f} seconds.")
+    print(f"Time per frame: {per_frame_time:.2f} seconds.")
+
+    # print (pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy)
+   
