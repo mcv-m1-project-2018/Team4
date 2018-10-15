@@ -16,6 +16,7 @@ import os
 import sys
 import pickle
 import time
+import cv2
 
 import numpy as np
 import imageio
@@ -60,7 +61,7 @@ def traffic_sign_detection(directory, output_dir, pixel_method, window_method, c
 
         pixel_candidates = morphological_operators(pixel_candidates)
 
-        #pixel_candidates = connected_labels(dilated)
+        pixel_candidates = connected_labels(pixel_candidates)
 
         
         fd = '{}/{}_{}'.format(output_dir, pixel_method, window_method)

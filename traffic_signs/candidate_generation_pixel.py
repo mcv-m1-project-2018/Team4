@@ -17,12 +17,16 @@ def connected_labels(dilated):
     sizes = stats[1:, -1]
     ret = ret - 1
 
-    min_size = 200
+    min_size = 460
+    max_size = 52700
 
     mask_removeSmall = labels.copy()
 
     for i in range(0, ret):
         if sizes[i] <= min_size:
+            mask_removeSmall[labels == i + 1] = 0
+
+        if sizes[i] >= max_size:
             mask_removeSmall[labels == i + 1] = 0
 
     label_hue = np.uint8(179 * mask_removeSmall / np.max(mask_removeSmall))
