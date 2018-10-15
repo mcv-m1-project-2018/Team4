@@ -21,7 +21,7 @@ import numpy as np
 import imageio
 from docopt import docopt
 
-from candidate_generation_pixel import candidate_generation_pixel
+from candidate_generation_pixel import candidate_generation_pixel, morphological_operators, connected_labels
 from candidate_generation_window import candidate_generation_window
 from evaluation.load_annotations import load_annotations
 import evaluation.evaluation_funcs as evalf
@@ -57,6 +57,10 @@ def traffic_sign_detection(directory, output_dir, pixel_method, window_method, c
 
         # Candidate Generation (pixel) ######################################
         pixel_candidates = candidate_generation_pixel(im, pixel_method)
+
+        pixel_candidates = morphological_operators(pixel_candidates)
+
+        #pixel_candidates = connected_labels(dilated)
 
         
         fd = '{}/{}_{}'.format(output_dir, pixel_method, window_method)
