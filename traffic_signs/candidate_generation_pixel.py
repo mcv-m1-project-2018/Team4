@@ -29,6 +29,7 @@ def connected_labels(dilated):
         if sizes[i] >= max_size:
             mask_removeSmall[labels == i + 1] = 0
 
+
     label_hue = np.uint8(179 * mask_removeSmall / np.max(mask_removeSmall))
     blank_ch = 255 * np.ones_like(label_hue)
     labeled_img = cv2.merge([label_hue, blank_ch, blank_ch])
@@ -39,10 +40,59 @@ def connected_labels(dilated):
     # set bg label to black
     labeled_img[label_hue == 0] = 0
 
-    labeled_img = cv2.cvtColor(labeled_img, cv2.COLOR_BGR2GRAY)
+    labeled_img_gray = cv2.cvtColor(labeled_img, cv2.COLOR_BGR2GRAY)
+    toDrawContours = labeled_img.copy()
+
+
+    ret, labeled_img_bin = cv2.threshold(labeled_img_gray, 0, 255, cv2.THRESH_BINARY)
+    copy_labeled_img_bin = labeled_img_bin.copy()
+
+    im2, contours, hierarchy = cv2.findContours(labeled_img_bin, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    factor = 4
+
+    form_factor_array = [1.064, 1.024, 0.950, 0.975, 0.943, 0.827]
+    form_factor_sd_array = [0.074, 0.144, 0.107, 0.085, 0.104, 0.177]
+
+    cv2.imshow('img_antes', copy_labeled_img_bin)
+    cv2.waitKey()
+
+
+    for cnt in contours:
+        x, y, w, h = cv2.boundingRect(cnt)
+        crop = labeled_img_bin[y:y+h, x:x+w]
+
+        cv2.rectangle(toDrawContours, (x, y), (x + w, y + h), (0, 255, 0), 2)
+        cv2.imshow('bounding_boxes', toDrawContours)
+        cv2.waitKey()
+
+        size = cv2.countNonZero(crop)
+        form_factor = crop.shape[1] / crop.shape[0]
+
+        form_factor_bool = False
+
+        for idx, ff in enumerate(form_factor_array):
+
+            if (form_factor >= (ff-factor*form_factor_sd_array[idx]) and form_factor <= (ff+factor*form_factor_sd_array[idx])):
+                form_factor_bool = True
+
+            if not form_factor_bool:
+                copy_crop = copy_labeled_img_bin[y:y+h, x:x+w]
+                copy_labeled_img_bin[np.where(copy_crop == 255)] = 0
+
+    cv2.imshow('img', copy_labeled_img_bin)
+    cv2.waitKey()
+    cv2.destroyAllWindows()
+
+
+        #filling_ratio = size / (crop.shape[1] * crop.shape[0])
+
+
+
+
     ret, labeled_img = cv2.threshold(labeled_img, 0, 255, cv2.THRESH_BINARY)
 
-    return labeled_img
+    return labeled_img_bin
 
 def candidate_generation_pixel_normrgb(im):
     # convert input image to the normRGB color space
