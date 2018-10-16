@@ -49,50 +49,69 @@ def connected_labels(dilated):
 
     im2, contours, hierarchy = cv2.findContours(labeled_img_bin, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-    factor = 4
+    factor = 3
 
     form_factor_array = [1.064, 1.024, 0.950, 0.975, 0.943, 0.827]
     form_factor_sd_array = [0.074, 0.144, 0.107, 0.085, 0.104, 0.177]
 
-    cv2.imshow('img_antes', copy_labeled_img_bin)
-    cv2.waitKey()
+    filling_ratio_array = [0.501, 0.496, 0.784, 0.779, 0.785, 1.0]
+    filling_ratio_sd_array =  [0.004, 0.004, 0.006, 0.055, 0.005, 0.0]
 
+
+    final_mask = np.zeros(labeled_img_bin.shape)
+
+    # cv2.imshow('bounding_boxes', copy_labeled_img_bin)
+    # cv2.waitKey()
+    #
+    cv2.drawContours(copy_labeled_img_bin, contours, -1, 255, -1)
+    #
+    # cv2.imshow('bounding_boxes', copy_labeled_img_bin)
+    # cv2.waitKey()
+    # cv2.destroyAllWindows()
+
+    # cv2.imshow('img', copy_labeled_img_bin)
+    # cv2.waitKey()
+    # cv2.destroyAllWindows()
 
     for cnt in contours:
         x, y, w, h = cv2.boundingRect(cnt)
-        crop = labeled_img_bin[y:y+h, x:x+w]
+        crop = copy_labeled_img_bin[y:y+h, x:x+w]
 
-        cv2.rectangle(toDrawContours, (x, y), (x + w, y + h), (0, 255, 0), 2)
-        cv2.imshow('bounding_boxes', toDrawContours)
-        cv2.waitKey()
+
 
         size = cv2.countNonZero(crop)
         form_factor = crop.shape[1] / crop.shape[0]
+        filling_ratio = size / (crop.shape[1] * crop.shape[0])
 
         form_factor_bool = False
+        filling_ratio_bool = False
+
 
         for idx, ff in enumerate(form_factor_array):
 
-            if (form_factor >= (ff-factor*form_factor_sd_array[idx]) and form_factor <= (ff+factor*form_factor_sd_array[idx])):
+            if form_factor >= (ff-factor*form_factor_sd_array[idx]) and form_factor <= (ff+factor*form_factor_sd_array[idx]):
                 form_factor_bool = True
 
-            if not form_factor_bool:
-                copy_crop = copy_labeled_img_bin[y:y+h, x:x+w]
-                copy_labeled_img_bin[np.where(copy_crop == 255)] = 0
+        for idx,fr in enumerate(filling_ratio_array):
+            if filling_ratio >= (fr - factor*filling_ratio_sd_array[idx]) and filling_ratio <= (fr+factor*filling_ratio_sd_array[idx]):
+                filling_ratio_bool = True
 
-    cv2.imshow('img', copy_labeled_img_bin)
-    cv2.waitKey()
-    cv2.destroyAllWindows()
+        if filling_ratio_bool:
+            final_mask[y:y+h, x:x+w] = crop
+
+    # cv2.imshow('mask', final_mask)
+    # cv2.waitKey()
+    # cv2.destroyAllWindows()
 
 
-        #filling_ratio = size / (crop.shape[1] * crop.shape[0])
-
-
+        if form_factor_bool == True:
+            final_mask[y:y+h, x:x+w] = crop
 
 
     ret, labeled_img = cv2.threshold(labeled_img, 0, 255, cv2.THRESH_BINARY)
+    ret, final_mask = cv2.threshold(final_mask, 0, 255, cv2.THRESH_BINARY)
 
-    return labeled_img_bin
+    return final_mask
 
 def candidate_generation_pixel_normrgb(im):
     # convert input image to the normRGB color space
