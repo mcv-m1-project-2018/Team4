@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+from template_matching import template_matching
 
 def candidate_generation_window_example1(im, pixel_candidates):
     window_candidates = [[17.0, 12.0, 49.0, 44.0], [60.0,90.0,100.0,130.0]]
@@ -17,7 +18,7 @@ def candidate_generation_window_example2(im, pixel_candidates):
  
 def switch_method(im, pixel_candidates, method):
     switcher = {
-        'example1': candidate_generation_window_example1,
+        'template_matching': template_matching,
         'example2': candidate_generation_window_example2
     }
     # Get the function from switcher dictionary
