@@ -116,9 +116,9 @@ def candidate_generation_pixel_hsv_hist(img):
     maskHSV_red = cv2.bitwise_or(maskHSV_red1, maskHSV_red2)
     mask_final = cv2.bitwise_or(maskHSV_blue, maskHSV_red)
 
-    cv2.imshow("result", mask_final)
-    cv2.imshow("color", img)
-    cv2.waitKey()
+    # cv2.imshow("result", mask_final)
+    # cv2.imshow("color", img)
+    # cv2.waitKey()
     pixel_candidates = mask_final
 
     return pixel_candidates
