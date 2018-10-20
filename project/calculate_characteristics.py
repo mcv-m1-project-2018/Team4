@@ -2,7 +2,7 @@ import cv2
 import os
 from pathlib import Path
 import numpy as np
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 IMG_EXTENSIONS = [
     '.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.tif', '.tiff'
@@ -142,8 +142,8 @@ def calculate_characteristics(dataset_path, classes_array=["A", "B", "C", "D", "
               "Max size": max_size, "Mins size": min_size, "Form Factor Standard Deviation": form_factor_sd,
               "Filling ratio Standard Deviation": filling_ratio_sd}
     print(output)
-    plot_std_dev(classes_array, form_factor_avg, form_factor_sd, "Form Factor")
-    plot_std_dev(classes_array, filling_ratio_avg, filling_ratio_sd, "Filling ratio")
+    # plot_std_dev(classes_array, form_factor_avg, form_factor_sd, "Form Factor")
+    # plot_std_dev(classes_array, filling_ratio_avg, filling_ratio_sd, "Filling ratio")
 
     return dataset_grouped, frequencies
 

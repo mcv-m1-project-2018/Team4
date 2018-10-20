@@ -1,4 +1,5 @@
 import numpy as np
+import cv2
 from sklearn.model_selection import train_test_split
 
 def dataset_split(dataset_grouped, test_set_ratio=0.3):
@@ -32,6 +33,20 @@ def dataset_split(dataset_grouped, test_set_ratio=0.3):
         dataset_train[class_id], dataset_valid[class_id] = train_test_split(dataset_grouped[class_id], test_size=test_set_ratio, random_state=42)
     
     return dataset_train, dataset_valid
+
+def save_dataset(dataset_grouped, directory):
+    index = 0
+    for class_id in range(len(dataset_grouped)):
+        for element in dataset_grouped[class_id]:
+            filename = directory + "/00." + str(index) + ".jpg"
+            filename_mask = directory + "/mask/mask.00." + str(index) + ".png"
+            filename_gt = directory + "/gt/gt.00." + str(index) + ".txt"
+            cv2.imwrite(filename, element[1])
+            mask = cv2.cvtColor(element[2], cv2.COLOR_BGR2GRAY)
+            cv2.imwrite(filename_mask, mask)
+            # print(element[3])
+            np.savetxt(filename_gt,element[3], delimiter=' ', newline=' ', fmt='%f')
+            index+=1
 
     # uncomment to print number of signals for train and validation from 
     # class A, and to print frequency of A class signals in the whole dataset

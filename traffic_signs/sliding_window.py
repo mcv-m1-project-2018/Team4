@@ -72,7 +72,7 @@ def slide_window(image, image_mask, ratio=0.4,h_ratio=0.95, window_size = [30,60
 
     for cnt in contours:
         x, y, w, h = cv2.boundingRect(cnt)
-        bbox_list_nonoverlap.append([x,y,w,h])
+        bbox_list_nonoverlap.append([y,x,y+h,x+w])
         cv2.rectangle(tmp,(x,y),(x+w,y+h),(2555,255,255),3)
     cv2.imshow('imgg',tmp)
     cv2.waitKey()

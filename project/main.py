@@ -11,7 +11,8 @@ import argparse
 from pathlib import Path
 import calculate_characteristics
 import task2
-import histogram_analysis_method
+# import histogram_analysis_method
+import compute_mean_templates as cmt
 
 
 
@@ -28,7 +29,9 @@ if __name__ == "__main__":
     # executing tasks:
     dataset_grouped, dataset = calculate_characteristics.calculate_characteristics(dataset_path)
     dataset_train, dataset_valid = task2.dataset_split(dataset_grouped, 0.3)
+    task2.save_dataset(dataset_valid, 'valid2')
     # The following line is optional, exporting histogram for: 
     # training dataset signs if (dataset, 0)
     # training dataset signs in separate classes if (dataset_grouped, 1)
-    histogram_analysis_method.analyse_obj_hist(dataset, 0)
+    # histogram_analysis_method.analyse_obj_hist(dataset, 0)
+    # cmt.compute_mean_templates(dataset_train)
