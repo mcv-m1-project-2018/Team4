@@ -151,7 +151,7 @@ if __name__ == '__main__':
     if counter != 0:
         per_frame_time = total_time/counter
 
-    print(f"Processed {counter:d} images in {total_time:.2f} seconds.")
-    print(f"Time per frame: {per_frame_time:.2f} seconds.")
+    # print(f"Processed {counter:d} images in {total_time:.2f} seconds.")
+    # print(f"Time per frame: {per_frame_time:.2f} seconds.")
 
    
