@@ -69,17 +69,21 @@ def traffic_sign_detection(directory, output_dir, pixel_method, window_method, c
             os.makedirs(fd)
         
         out_mask_name = '{}/{}.png'.format(fd, base)
-        imageio.imwrite (out_mask_name, np.uint8(np.round(pixel_candidates)))
 
         
         if window_method != 'None':
 
             window_candidates = candidate_generation_window(im, pixel_candidates, window_method) 
-
+            window_mask = np.zeros(im.shape)
+            for window_candidate in window_candidates:
+                window_mask[window_candidate[0]:window_candidate[2],window_candidate[1]:window_candidate[3]]=pixel_candidates[window_candidate[0]:window_candidate[2],window_candidate[1]:window_candidate[3]]
             out_list_name = '{}/{}.pkl'.format(fd, base)
-            
+            pixel_candidates=window_mask
             with open(out_list_name, "wb") as fp:   #Pickling
                 pickle.dump(window_candidates, fp)
+
+        imageio.imwrite (out_mask_name, np.uint8(np.round(pixel_candidates)))
+
                       
         pixel_precision = 0
         pixel_accuracy = 0
