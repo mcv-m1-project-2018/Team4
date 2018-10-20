@@ -74,7 +74,7 @@ def traffic_sign_detection(directory, output_dir, pixel_method, window_method, c
         if window_method != 'None':
 
             window_candidates = candidate_generation_window(im, pixel_candidates, window_method) 
-            window_mask = np.zeros(im.shape)
+            window_mask = np.zeros(pixel_candidates.shape)
             for window_candidate in window_candidates:
                 window_mask[window_candidate[0]:window_candidate[2],window_candidate[1]:window_candidate[3]]=pixel_candidates[window_candidate[0]:window_candidate[2],window_candidate[1]:window_candidate[3]]
             out_list_name = '{}/{}.pkl'.format(fd, base)
@@ -161,7 +161,7 @@ if __name__ == '__main__':
     if counter != 0:
         per_frame_time = total_time/counter
 
-    print(f"Processed {counter:d} images in {total_time:.2f} seconds.")
-    print(f"Time per frame: {per_frame_time:.2f} seconds.")
+    # print(f"Processed {counter:d} images in {total_time:.2f} seconds.")
+    # print(f"Time per frame: {per_frame_time:.2f} seconds.")
 
    
