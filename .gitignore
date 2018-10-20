@@ -10,3 +10,5 @@ settings.json
 *.pyc
 *.tar
 outMask*
+
+.idea/

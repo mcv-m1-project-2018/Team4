@@ -139,6 +139,7 @@ if __name__ == '__main__':
     images_dir = args['<dirName>']          # Directory with input images and annotations
                                             # For instance, '../../DataSetDelivered/test'
     output_dir = args['<outPath>']          # Directory where to store output masks, etc. For instance '~/m1-results/week1/test'
+
     pixel_method = args['<pixelMethod>']
     window_method = args['--windowMethod']
     calculate_metrics = args['--calculateMetrics']
