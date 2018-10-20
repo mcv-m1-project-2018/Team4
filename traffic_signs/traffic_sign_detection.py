@@ -25,6 +25,8 @@ from candidate_generation_pixel import candidate_generation_pixel
 from candidate_generation_window import candidate_generation_window
 from evaluation.load_annotations import load_annotations
 import evaluation.evaluation_funcs as evalf
+from connected_labels_pixel_cand import connected_labels_pixel_cand
+from morphological_operators import morphological_operators
 
 def traffic_sign_detection(directory, output_dir, pixel_method, window_method, calculate_metrics):
 
@@ -32,6 +34,8 @@ def traffic_sign_detection(directory, output_dir, pixel_method, window_method, c
     pixelFN  = 0
     pixelFP  = 0
     pixelTN  = 0
+
+    pixelF1  = 0
 
     windowTP = 0
     windowFN = 0
@@ -57,7 +61,8 @@ def traffic_sign_detection(directory, output_dir, pixel_method, window_method, c
 
         # Candidate Generation (pixel) ######################################
         pixel_candidates = candidate_generation_pixel(im, pixel_method)
-
+        # pixel_candidates = morphological_operators(pixel_candidates)
+        pixel_candidates = connected_labels_pixel_cand(im, pixel_candidates)
         
         fd = '{}/{}_{}'.format(output_dir, pixel_method, window_method)
         if not os.path.exists(fd):
@@ -152,7 +157,7 @@ if __name__ == '__main__':
     if counter != 0:
         per_frame_time = total_time/counter
 
-    # print(f"Processed {counter:d} images in {total_time:.2f} seconds.")
-    # print(f"Time per frame: {per_frame_time:.2f} seconds.")
+    print(f"Processed {counter:d} images in {total_time:.2f} seconds.")
+    print(f"Time per frame: {per_frame_time:.2f} seconds.")
 
    
