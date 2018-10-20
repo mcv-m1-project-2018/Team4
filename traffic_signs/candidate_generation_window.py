@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 from template_matching import template_matching
 from sliding_window import slide_window
+from connected_labels import connected_labels
 
 def candidate_generation_window_example1(im, pixel_candidates):
     window_candidates = [[17.0, 12.0, 49.0, 44.0], [60.0,90.0,100.0,130.0]]
@@ -21,7 +22,7 @@ def switch_method(im, pixel_candidates, method):
     switcher = {
         'template_matching': template_matching,
         'sliding_window': slide_window,
-        'example2': candidate_generation_window_example2
+        'connected_labels': connected_labels
     }
     # Get the function from switcher dictionary
     func = switcher.get(method, lambda: "Invalid method")

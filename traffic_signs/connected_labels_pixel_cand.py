@@ -5,7 +5,7 @@ import cv2
 from skimage import color
 from morphological_operators import morphological_operators
 
-def connected_labels(im, pixel_candidates):
+def connected_labels_pixel_cand(im, pixel_candidates):
     # Connected components
     dilated = morphological_operators(pixel_candidates)
     ret, labels, stats, centroid = cv2.connectedComponentsWithStats(dilated, connectivity=4)
@@ -118,4 +118,4 @@ def connected_labels(im, pixel_candidates):
         window_candidates.append(bb)
 
 
-    return window_candidates
+    return final_mask
