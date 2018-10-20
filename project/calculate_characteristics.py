@@ -2,16 +2,14 @@ import cv2
 import os
 from pathlib import Path
 import numpy as np
-import argparse
-
-
+import matplotlib.pyplot as plt
 
 IMG_EXTENSIONS = [
     '.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.tif', '.tiff'
 ]
 
-#Functions statement
 
+# Functions statement
 def is_image_file(filename):
     return any(filename.lower().endswith(extension)
                for extension in IMG_EXTENSIONS)
@@ -32,6 +30,13 @@ def read_gt(dataset_path, filename):
 def calc_size(crop):
     return cv2.countNonZero(cv2.cvtColor(crop, cv2.COLOR_BGR2GRAY))
 
+def plot_std_dev(x, y, e, metric):
+    plt.errorbar(x, y, e, linestyle='None', marker='o')
+    plt.title(metric)
+    plt.ylabel(metric)
+    plt.xlabel('Class')
+
+    plt.show()
 
 
 def calculate_characteristics(dataset_path, classes_array=["A", "B", "C", "D", "E", "F"]):
@@ -65,17 +70,6 @@ def calculate_characteristics(dataset_path, classes_array=["A", "B", "C", "D", "
         if is_image_file(filename):
             # Read the image, mask and gt corresponding to certain filename
             img = cv2.imread(str(Path(dataset_path) / Path(filename)))
-            img_out = np.zeros(img.shape, dtype=img.dtype)
-            clahe = cv2.createCLAHE(clipLimit=2, tileGridSize=(8,8))
-
-            #uncomment to apply equilization of histograms
-            # eqR = clahe.apply(img[:,:,0])
-            # eqG = clahe.apply(img[:,:,1])
-            # eqB = clahe.apply(img[:,:,2])
-            # img_out[:,:,0] = eqR
-            # img_out[:,:,1] = eqG
-            # img_out[:,:,2] = eqB
-            # img = img_out
             mask = read_mask(dataset_path, Path(filename))
             bounding_boxes = read_gt(Path(dataset_path), Path(filename))
 
@@ -115,6 +109,9 @@ def calculate_characteristics(dataset_path, classes_array=["A", "B", "C", "D", "
     filling_ratio_avg = []
     max_size = []
     min_size = []
+    form_factor_sd = []
+    filling_ratio_sd = []
+
 
     # Compute the final values for each class and fill the output with them
     for class_id in classes_array:
@@ -123,50 +120,31 @@ def calculate_characteristics(dataset_path, classes_array=["A", "B", "C", "D", "
         frequencies.append(len(split_by_classes))
 
         split_by_classes_float = np.array(split_by_classes[:, 1: 4], dtype=float)
+        # means
         form_factor_avg.append(np.mean(split_by_classes_float[:, 1]))
         filling_ratio_avg.append(np.mean(split_by_classes_float[:, 2]))
-
+        # max, min sizes
         max_size.append(np.amax(split_by_classes_float[:, 0]))
         min_size.append(np.amin(split_by_classes_float[:, 0]))
+        #standard deviation
+        form_factor_sd.append(np.std(split_by_classes_float[:, 1]))
+        filling_ratio_sd.append(np.std(split_by_classes_float[:, 2]))
+
+
 
     # Split the whole dataset array into classes and put them into one big array
     for index in range(0, len(dataset)):
         for class_id in classes_array:
-            if (dataset[index][0] == class_id):
+            if dataset[index][0] == class_id:
                 dataset_grouped[classes_array.index(class_id)].append(dataset[index])
 
-    output = [frequencies, form_factor_avg, filling_ratio_avg, max_size, min_size]
+    output = {"Frequecie": frequencies, "Form factor": form_factor_avg, "Filling ratio": filling_ratio_avg,
+              "Max size": max_size, "Mins size": min_size, "Form Factor Standard Deviation": form_factor_sd,
+              "Filling ratio Standard Deviation": filling_ratio_sd}
     print(output)
+    plot_std_dev(classes_array, form_factor_avg, form_factor_sd, "Form Factor")
+    plot_std_dev(classes_array, filling_ratio_avg, filling_ratio_sd, "Filling ratio")
 
     return dataset_grouped, frequencies
 
-def save_dataset(dataset, directory):
-    index = 0
-    for class_id in range(len(dataset_grouped)):
-        for element in dataset_grouped[class_id]:
-            filename = directory + "/00." + str(index) + ".jpg"
-            filename_mask = directory + "/mask/mask.00." + str(index) + ".png"
-            cv2.imwrite(filename, element[1])
-            mask = cv2.cvtColor(element[2], cv2.COLOR_BGR2GRAY)
-            cv2.imwrite(filename_mask, mask)
-            index+=1
-
-
-if __name__ == "__main__":
-
-    ap = argparse.ArgumentParser()
-    ap.add_argument("-dp", "--dataset_path", required=True,
-                    help="Dataset path, it should be at the same level as task1.py")
-
-    args = vars(ap.parse_args())
-
-    file_path = Path(__file__).parent.absolute()
-    dataset_path = str(file_path / Path(args["dataset_path"]))
-    # executing tasks:
-    dataset_grouped, frequencies = calculate_characteristics(dataset_path)
-    dataset_train, dataset_valid = task2(dataset_grouped, frequencies)
-    save_dataset(dataset_valid, "valid")
-    # compute_color_spaces_avg(dataset_train)
-    task_3(dataset_train, dataset_valid)
-    # traffic_sign_detection()
 
