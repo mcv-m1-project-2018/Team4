@@ -35,7 +35,7 @@ def traffic_sign_detection(directory, output_dir, pixel_method, window_method, c
     pixelFP  = 0
     pixelTN  = 0
 
-    pixelF1  = 0
+    pixel_F1  = 0
 
     windowTP = 0
     windowFN = 0
