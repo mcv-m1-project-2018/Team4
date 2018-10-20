@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 import cv2
-from morphological_operators import morphological_operators, connected_labels
+from morphological_operators import morphological_operators
+from connected_labels import connected_labels
 # from sliding_window import union, intersection
 
 def template_matching(im, pixel_candidates):
@@ -19,6 +20,7 @@ def template_matching(im, pixel_candidates):
     im_gray = np.multiply(im_gray, mask)
     matches_by_type = []
     threshold = 0.75
+    padding = 0.1
     size_range = [64, 96, 128, 192, 256]
     for sign_type in range(0,5):
         template = cv2.imread("templates/"+str(sign_type)+".jpg",0)
@@ -28,8 +30,13 @@ def template_matching(im, pixel_candidates):
             scaled_template = cv2.resize(template,(size, size))
             w, h = scaled_template.shape[::-1]         
             ret, template_mask = cv2.threshold(scaled_template, 1, 255, cv2.THRESH_BINARY)
-            # cv2.imshow("mask", template_mask)
-            # cv2.waitKey()
+            padded_mask = np.zeros((int(template_mask.shape[1]+template_mask.shape[1]*padding),int(template_mask.shape[0]+template_mask.shape[0]*padding)))
+            print(padded_mask.shape[1])
+            print(padded_mask.shape[0])
+
+            padded_mask [int(template_mask.shape[1]*padding*0.5):template_mask.shape[1], int(template_mask.shape[1]*padding*0.5):template_mask.shape[1]] = template_mask
+            cv2.imshow("mask", template_mask)
+            cv2.waitKey()
             # result = cv2.matchTemplate(im_gray,scaled_template, cv2.TM_CCOEFF_NORMED,template_mask)
             result = cv2.matchTemplate(mask,template_mask, cv2.TM_CCOEFF_NORMED)
             minVal, maxVal, loc1, loc2 = cv2.minMaxLoc(result)
