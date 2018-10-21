@@ -3,14 +3,14 @@
 import numpy as np
 import cv2
 from morphological_operators import morphological_operators
-from connected_labels import connected_labels
+from connected_labels_pixel_cand import connected_labels_pixel_cand as connected_labels
 # from sliding_window import union, intersection
 
 def template_matching(im, pixel_candidates):
 
-    mask = morphological_operators(pixel_candidates)
-    mask = connected_labels(mask)
-    mask = mask.astype(np.uint8)
+    # mask = morphological_operators(pixel_candidates)
+    # mask = connected_labels(im, mask)
+    mask = pixel_candidates.astype(np.uint8)
     # im_gray = cv2.cvtColor(im, cv2.COLOR_RGB2GRAY)
     # im_gray = np.multiply(im_gray, mask)
     # matches_by_type = []
@@ -52,8 +52,9 @@ def template_matching(im, pixel_candidates):
         x, y, w, h = cv2.boundingRect(cnt)
         window_candidates.append([y,x,y+h,x+w])
         # cv2.rectangle(tmp,(x,y),(x+w,y+h),(0,40,255),3)
-    # cv2.imshow('contoured_bb',tmp)
-    # cv2.waitKey(100)
+    # cv2.imshow('contoured_bb',pixel_candidates)
+    # cv2.waitKey()
+    
     # cv2.imshow("image", im)
         # cv2.imshow("template", template)
     # cv2.waitKey()

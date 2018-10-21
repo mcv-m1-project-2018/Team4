@@ -25,6 +25,8 @@ from candidate_generation_pixel import candidate_generation_pixel
 from candidate_generation_window import candidate_generation_window
 from evaluation.load_annotations import load_annotations
 import evaluation.evaluation_funcs as evalf
+from connected_labels_pixel_cand import connected_labels_pixel_cand
+from morphological_operators import morphological_operators
 
 def traffic_sign_detection(directory, output_dir, pixel_method, window_method, calculate_metrics):
 
@@ -32,6 +34,8 @@ def traffic_sign_detection(directory, output_dir, pixel_method, window_method, c
     pixelFN  = 0
     pixelFP  = 0
     pixelTN  = 0
+
+    pixel_F1  = 0
 
     windowTP = 0
     windowFN = 0
@@ -57,24 +61,29 @@ def traffic_sign_detection(directory, output_dir, pixel_method, window_method, c
 
         # Candidate Generation (pixel) ######################################
         pixel_candidates = candidate_generation_pixel(im, pixel_method)
-
+        # pixel_candidates = morphological_operators(pixel_candidates)
+        pixel_candidates = connected_labels_pixel_cand(im, pixel_candidates)
         
         fd = '{}/{}_{}'.format(output_dir, pixel_method, window_method)
         if not os.path.exists(fd):
             os.makedirs(fd)
         
         out_mask_name = '{}/{}.png'.format(fd, base)
-        imageio.imwrite (out_mask_name, np.uint8(np.round(pixel_candidates)))
 
         
         if window_method != 'None':
 
             window_candidates = candidate_generation_window(im, pixel_candidates, window_method) 
-
+            window_mask = np.zeros(pixel_candidates.shape)
+            for window_candidate in window_candidates:
+                window_mask[window_candidate[0]:window_candidate[2],window_candidate[1]:window_candidate[3]]=pixel_candidates[window_candidate[0]:window_candidate[2],window_candidate[1]:window_candidate[3]]
             out_list_name = '{}/{}.pkl'.format(fd, base)
-            
+            pixel_candidates=window_mask
             with open(out_list_name, "wb") as fp:   #Pickling
                 pickle.dump(window_candidates, fp)
+
+        imageio.imwrite (out_mask_name, np.uint8(np.round(pixel_candidates)))
+
                       
         pixel_precision = 0
         pixel_accuracy = 0
