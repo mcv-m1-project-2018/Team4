@@ -24,4 +24,15 @@ def compare_block(hist1, hist2, method=1):
             overall_score += score
 
     return overall_score
+
+def compare_pyramid(hist1, hist2, method=1):
+
+    overall_score = 0
+    whole_image_index = len(hist1)-1
+    overall_score = cv2.compareHist(hist1[whole_image_index], hist2[whole_image_index], method=method)
     
+    for r in range(0,len(hist1)-1):
+            score = cv2.compareHist(hist1[r], hist2[r], method=method)
+            overall_score += score
+
+    return overall_score    
