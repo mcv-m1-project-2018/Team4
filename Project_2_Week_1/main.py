@@ -4,7 +4,7 @@ Usage:
 Options:
 """
 import sys
-from compare import compare, compare_3channel, compare_block
+from compare import compare, compare_3channel, compare_block, compare_pyramid
 from create_descriptors import read_set
 from operator import itemgetter
 from ml_metrics import mapk
@@ -20,6 +20,7 @@ if __name__ == "__main__":
         print(len(museum_histograms_by_type[4][0]))
 
         hist_type = 3
+        compare_method = 3
 
         actual_query = query_set
         K = 10
@@ -27,11 +28,13 @@ if __name__ == "__main__":
 
         for idx_q, query_histogram in enumerate (query_histograms_by_type[hist_type]):
             scores = []
-
             for idx, img_histogram in enumerate (museum_histograms_by_type[hist_type]):
-                # score = compare_3channel(img_histogram, query_histogram,1)
-                score = compare_block(img_histogram, query_histogram, 3)
-
+                if (hist_type < 4):
+                    score = compare_3channel(img_histogram, query_histogram, compare_method)
+                elif (hist_type == 4):
+                    score = compare_block(img_histogram, query_histogram, compare_method)
+                elif (hist_type == 5):
+                    score = compare_pyramid(img_histogram, query_histogram, compare_method)
                 scores.append([score, idx])
         
             scores.sort(key=itemgetter(0))
