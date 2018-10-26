@@ -10,22 +10,25 @@ import cv2
 import sys
 import os
 from matplotlib import pyplot as plt
+from operator import itemgetter
+from compare import compare
 
-def read_sets(museum_path, query_path):
-    museum_set = []
-    query_set = []
+def read_set(dataset_path):
+    dataset = []
 
-    for filename in os.listdir(museum_path):
-        img = cv2.imread(os.path.join(museum_path,filename))
-        museum_set.append(img)
+    for filename in os.listdir(dataset_path):
+        img = cv2.imread(os.path.join(dataset_path,filename))
+        dataset.append(img)
 
-    for filename in os.listdir(query_path):
-        img = cv2.imread(os.path.join(query_path, filename))
-        query_set.append(img)
+    return dataset, create_descriptors(dataset)
 
-    create_descriptors(museum_set, query_set)
+def read_query_image(image_path):
 
-def create_descriptors(museum_set, query_set):
+    img = cv2.imread(image_path,1)
+
+    return img, create_descriptors(img)
+
+def create_descriptors(dataset):
     rgb_hists_dataset = []
     lab_hists_dataset = []
     ycb_hists_dataset = []
@@ -37,7 +40,7 @@ def create_descriptors(museum_set, query_set):
 
     block_factor = 4
 
-    for idx, im in enumerate(museum_set):
+    for idx, im in enumerate(dataset):
         rgb_hists_ind, lab_hists_ind, ycb_hists_ind, hsv_hists_ind = global_representation(im)
 
         rgb_hists_dataset.append(rgb_hists_ind)
@@ -51,6 +54,8 @@ def create_descriptors(museum_set, query_set):
         pyramid_levels = pyramid_representation(im, block_factor)
         pyramid_levels.insert(0, block_hists_dataset[idx])
         pyramid_hists_dataset.append(pyramid_levels)
+    
+    return rgb_hists_dataset, lab_hists_dataset, ycb_hists_dataset, hsv_hists_dataset, block_hists_dataset, pyramid_hists_dataset
     
 
 def global_representation(im):
@@ -92,7 +97,6 @@ def global_representation(im):
     hsv_hists.append(hist_1)
     hsv_hists.append(hist_2)
     return rgb_hists, lab_hists, ycb_hists, hsv_hists
-
 
 def block_representation(im, block_factor):
     """BLOCK REPRESENTATION"""
@@ -155,7 +159,29 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         museum_path = sys.argv[1]
         query_path = sys.argv[2]
-        read_sets(museum_path, query_path)
+        museum_set, museum_histograms_by_type = read_set(museum_path)
+        query_set, query_histograms_by_type = read_set(query_path)
+        query_histogram = query_histograms_by_type[0][0]
+        print(museum_histograms_by_type[0][0][0].shape)
+        score = compare(museum_histograms_by_type[0][0][0], query_histograms_by_type[0][0][0])
+        scores = []
+        for idx, img_histogram in enumerate (museum_histograms_by_type[0]):
+            score = compare(img_histogram[0], query_histogram[0],3)
+ 
+            scores.append([score, idx])
+        
+        print(scores)
+        scores.sort(key=itemgetter(0))
+        print(scores)
+
+        max_index = scores.index(min(scores))
+        print(max_index)
+        # print(max_score)
+        cv2.imshow("query", query_set[0])
+        for idx in range (0,10):
+            cv2.imshow("matched", museum_set[scores[idx][1]])
+            cv2.waitKey()
+        
 
     else:
         print("ARGUMENTS NEEDED!")
