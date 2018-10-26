@@ -7,6 +7,9 @@ def compare(hist1, hist2, method=1):
     return score
 
 def compare_3channel(hist1, hist2, method=1):
+    """
+    methods: 1=chi-square, 2=histogram-intersection 3=Hellinger-distance
+    """
     score1 = cv2.compareHist(hist1[0], hist2[0], method=method)
     score2 = cv2.compareHist(hist1[1], hist2[1], method=method)
     score3 = cv2.compareHist(hist1[2], hist2[2], method=method)
@@ -16,9 +19,8 @@ def compare_3channel(hist1, hist2, method=1):
 def compare_block(hist1, hist2, method=1):
 
     overall_score = 0
-    for r in range(0, hist1.shape[0]):
-        for c in range(0, hist1.shape[1]):
-            score = cv2.compareHist(hist1[r][c], hist2[r][c], method=method)
+    for r in range(0,len(hist1)):
+            score = cv2.compareHist(hist1[r], hist2[r], method=method)
             overall_score += score
 
     return overall_score

@@ -11,7 +11,7 @@ import sys
 import os
 from matplotlib import pyplot as plt
 from operator import itemgetter
-from compare import compare
+from compare import compare, compare_3channel, compare_block
 
 def read_set(dataset_path):
     dataset = []
@@ -161,26 +161,33 @@ if __name__ == "__main__":
         query_path = sys.argv[2]
         museum_set, museum_histograms_by_type = read_set(museum_path)
         query_set, query_histograms_by_type = read_set(query_path)
-        query_histogram = query_histograms_by_type[0][0]
-        print(museum_histograms_by_type[0][0][0].shape)
-        score = compare(museum_histograms_by_type[0][0][0], query_histograms_by_type[0][0][0])
-        scores = []
-        for idx, img_histogram in enumerate (museum_histograms_by_type[0]):
-            score = compare(img_histogram[0], query_histogram[0],3)
- 
-            scores.append([score, idx])
+        # query_histogram = query_histograms_by_type[3][15]
+        print(len(museum_histograms_by_type[4][0]))
+
+        hist_type = 3
+        for idx_q, query_histogram in enumerate (query_histograms_by_type[hist_type]):
+            scores = []
+
+            for idx, img_histogram in enumerate (museum_histograms_by_type[hist_type]):
+                # score = compare_3channel(img_histogram, query_histogram,1)
+                score = compare_block(img_histogram, query_histogram, 3)
+    
+                scores.append([score, idx])
         
-        print(scores)
-        scores.sort(key=itemgetter(0))
+            scores.sort(key=itemgetter(0))
+            cv2.imshow("query", query_set[idx_q])
+            for idx in range (0,10):
+                cv2.imshow("matched", museum_set[scores[idx][1]])
+                if (idx == 0):
+                    cv2.waitKey()
+                cv2.waitKey(500)
+
         print(scores)
 
         max_index = scores.index(min(scores))
         print(max_index)
         # print(max_score)
-        cv2.imshow("query", query_set[0])
-        for idx in range (0,10):
-            cv2.imshow("matched", museum_set[scores[idx][1]])
-            cv2.waitKey()
+        
         
 
     else:
