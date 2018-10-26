@@ -24,3 +24,4 @@ def compare_block(hist1, hist2, method=1):
             overall_score += score
 
     return overall_score
+    
