@@ -12,3 +12,6 @@ settings.json
 outMask*
 
 .idea/
+
+*.zip
+*.xml

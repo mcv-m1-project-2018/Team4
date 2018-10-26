@@ -13,8 +13,9 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         museum_path = sys.argv[1]
         query_path = sys.argv[2]
-        museum_set, museum_histograms_by_type = read_set(museum_path)
-        query_set, query_histograms_by_type = read_set(query_path)
+        block_color_space = int(sys.argv[3])
+        museum_set, museum_histograms_by_type = read_set(museum_path, block_color_space)
+        query_set, query_histograms_by_type = read_set(query_path, block_color_space)
         # query_histogram = query_histograms_by_type[3][15]
         print(len(museum_histograms_by_type[4][0]))
 

@@ -6,22 +6,22 @@ import os
 from matplotlib import pyplot as plt
 from compare import compare, compare_3channel, compare_block
 
-def read_set(dataset_path):
+def read_set(dataset_path, block_color_space):
     dataset = []
 
     for filename in os.listdir(dataset_path):
         img = cv2.imread(os.path.join(dataset_path,filename))
         dataset.append(img)
 
-    return dataset, create_descriptors(dataset)
+    return dataset, create_descriptors(dataset, block_color_space)
 
-def read_query_image(image_path):
+def read_query_image(image_path, block_color_space):
 
     img = cv2.imread(image_path,1)
 
-    return img, create_descriptors(img)
+    return img, create_descriptors(img, block_color_space)
 
-def create_descriptors(dataset):
+def create_descriptors(dataset, block_color_space):
     rgb_hists_dataset = []
     lab_hists_dataset = []
     ycb_hists_dataset = []
@@ -41,10 +41,10 @@ def create_descriptors(dataset):
         ycb_hists_dataset.append(ycb_hists_ind)
         hsv_hists_dataset.append(hsv_hists_ind)
 
-        block_hist_ind = block_representation(im, block_factor)
+        block_hist_ind = block_representation(im, block_factor, block_color_space)
         block_hists_dataset.append(block_hist_ind)
 
-        pyramid_levels = pyramid_representation(im, block_factor)
+        pyramid_levels = pyramid_representation(im, block_factor, block_color_space)
         pyramid_levels.insert(0, block_hists_dataset[idx])
         pyramid_hists_dataset.append(pyramid_levels)
     
@@ -91,7 +91,9 @@ def global_representation(im):
     hsv_hists.append(hist_2)
     return rgb_hists, lab_hists, ycb_hists, hsv_hists
 
-def block_representation(im, block_factor):
+def block_representation(im, block_factor, color_space):
+
+
     """BLOCK REPRESENTATION"""
     # Shape = rows and columns
     remainder_rows = im.shape[0] % block_factor
@@ -111,13 +113,45 @@ def block_representation(im, block_factor):
     for r in range(0, im_block.shape[0], windowsize_r):
         for c in range(0, im_block.shape[1], windowsize_c):
             window = im_block[r:r + windowsize_r, c:c + windowsize_c]
-            window_gray = cv2.cvtColor(window, cv2.COLOR_BGR2GRAY)
-            hist_crop = cv2.calcHist([window_gray], [0], None, [256], [0, 256])
-            hist_crops.append(hist_crop)
+            if color_space == 0:
+                window_gray = cv2.cvtColor(window, cv2.COLOR_BGR2GRAY)
+                hist_crop = cv2.calcHist([window_gray], [0], None, [256], [0, 256])
+                hist_crops.append(hist_crop)
+            elif color_space == 1:
+                hist_crop = cv2.calcHist([window], [0], None, [256], [0, 256])
+                hist_crops.append(hist_crop)
+                hist_crop = cv2.calcHist([window], [1], None, [256], [0, 256])
+                hist_crops.append(hist_crop)
+                hist_crop = cv2.calcHist([window], [2], None, [256], [0, 256])
+                hist_crops.append(hist_crop)
+            elif color_space == 2:
+                window= cv2.cvtColor(window, cv2.COLOR_BGR2LAB)
+                hist_crop = cv2.calcHist([window], [0], None, [256], [0, 256])
+                hist_crops.append(hist_crop)
+                hist_crop = cv2.calcHist([window], [1], None, [256], [0, 256])
+                hist_crops.append(hist_crop)
+                hist_crop = cv2.calcHist([window], [2], None, [256], [0, 256])
+                hist_crops.append(hist_crop)
+            elif color_space == 3:
+                window = cv2.cvtColor(window, cv2.COLOR_BGR2YCrCb)
+                hist_crop = cv2.calcHist([window], [0], None, [256], [0, 256])
+                hist_crops.append(hist_crop)
+                hist_crop = cv2.calcHist([window], [1], None, [256], [0, 256])
+                hist_crops.append(hist_crop)
+                hist_crop = cv2.calcHist([window], [2], None, [256], [0, 256])
+                hist_crops.append(hist_crop)
+            elif color_space == 4:
+                window = cv2.cvtColor(window, cv2.COLOR_BGR2HSV)
+                hist_crop = cv2.calcHist([window], [0], None, [256], [0, 256])
+                hist_crops.append(hist_crop)
+                hist_crop = cv2.calcHist([window], [1], None, [256], [0, 256])
+                hist_crops.append(hist_crop)
+                hist_crop = cv2.calcHist([window], [2], None, [256], [0, 256])
+                hist_crops.append(hist_crop)
 
     return hist_crops
 
-def pyramid_representation(im, block_factor):
+def pyramid_representation(im, block_factor, color_space):
     """SPATIAL PYRAMID REPRESENTATION"""
     reduced_block_factor = block_factor;
     pyramid_levels = []
@@ -139,10 +173,41 @@ def pyramid_representation(im, block_factor):
         for r in range(0, im_block.shape[0], windowsize_r):
             for c in range(0, im_block.shape[1], windowsize_c):
                 window = im_block[r:r + windowsize_r, c:c + windowsize_c]
-                window_gray = cv2.cvtColor(window, cv2.COLOR_BGR2GRAY)
-                hist_crop = cv2.calcHist([window_gray], [0], None, [256], [0, 256])
-                hist_crops.append(hist_crop)
-
+                if color_space == 0:
+                    window_gray = cv2.cvtColor(window, cv2.COLOR_BGR2GRAY)
+                    hist_crop = cv2.calcHist([window_gray], [0], None, [256], [0, 256])
+                    hist_crops.append(hist_crop)
+                elif color_space == 1:
+                    hist_crop = cv2.calcHist([window], [0], None, [256], [0, 256])
+                    hist_crops.append(hist_crop)
+                    hist_crop = cv2.calcHist([window], [1], None, [256], [0, 256])
+                    hist_crops.append(hist_crop)
+                    hist_crop = cv2.calcHist([window], [2], None, [256], [0, 256])
+                    hist_crops.append(hist_crop)
+                elif color_space == 2:
+                    window = cv2.cvtColor(window, cv2.COLOR_BGR2LAB)
+                    hist_crop = cv2.calcHist([window], [0], None, [256], [0, 256])
+                    hist_crops.append(hist_crop)
+                    hist_crop = cv2.calcHist([window], [1], None, [256], [0, 256])
+                    hist_crops.append(hist_crop)
+                    hist_crop = cv2.calcHist([window], [2], None, [256], [0, 256])
+                    hist_crops.append(hist_crop)
+                elif color_space == 3:
+                    window = cv2.cvtColor(window, cv2.COLOR_BGR2YCrCb)
+                    hist_crop = cv2.calcHist([window], [0], None, [256], [0, 256])
+                    hist_crops.append(hist_crop)
+                    hist_crop = cv2.calcHist([window], [1], None, [256], [0, 256])
+                    hist_crops.append(hist_crop)
+                    hist_crop = cv2.calcHist([window], [2], None, [256], [0, 256])
+                    hist_crops.append(hist_crop)
+                elif color_space == 4:
+                    window = cv2.cvtColor(window, cv2.COLOR_BGR2HSV)
+                    hist_crop = cv2.calcHist([window], [0], None, [256], [0, 256])
+                    hist_crops.append(hist_crop)
+                    hist_crop = cv2.calcHist([window], [1], None, [256], [0, 256])
+                    hist_crops.append(hist_crop)
+                    hist_crop = cv2.calcHist([window], [2], None, [256], [0, 256])
+                    hist_crops.append(hist_crop)
         pyramid_levels.append(hist_crops)
 
     return pyramid_levels
