@@ -5,7 +5,7 @@ Options:
 """
 import sys
 from compare import compare, compare_3channel, compare_block
-from task1 import read_set
+from create_descriptors import read_set
 from operator import itemgetter
 import cv2
 
