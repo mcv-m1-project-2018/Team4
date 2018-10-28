@@ -6,10 +6,10 @@ Usage:
 Options:
   <museum_set_path>
   <query_set_path>
-  [--colorSpace=<cs>]        [default: gray]
-  [--featureType=<pm>]       [default: block]
-  [--blockFactor=<bf>]       [default: '1']
-  [--compareMethod=<cm>]     [default: Hellinger]
+  [--colorSpace=<cs>]        Choose one of: gray, RGB, Lab, YCrCb, HSV     [default: gray]
+  [--featureType=<pm>]       Choose one of: block, pyramid, whole [default: block]
+  [--blockFactor=<bf>]       Number of blocks in a row [default: '1']
+  [--compareMethod=<cm>]     Choose one of: chi-square, intersection, Hellinger [default: Hellinger]
 """
 
 import sys
