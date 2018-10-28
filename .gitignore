@@ -1,6 +1,8 @@
 *.jpg
-*.txt
+project/*.txt
+traffic_signs/*.txt
 *.png
+gt.*
 
 
 settings.json
