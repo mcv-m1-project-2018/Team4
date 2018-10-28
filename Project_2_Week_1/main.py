@@ -61,6 +61,8 @@ def get_param_from_arg(color_space_name, feature_type_name, compare_method_name)
         compare_method = 2
     elif (compare_method_name == 'Hellinger'):
         compare_method = 3
+    elif (compare_method_name == 'bhatta'):
+        compare_method = 4
     else:
         print('Wrong compare method name. Using chi-square as default.')
         compare_method = 1
