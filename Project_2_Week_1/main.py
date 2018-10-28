@@ -21,6 +21,8 @@ from ml_metrics import mapk
 from docopt import docopt
 import cv2
 import pickle
+import time
+
 
 def get_param_from_arg(color_space_name, feature_type_name, compare_method_name):
     color_space = 0
@@ -124,6 +126,7 @@ if __name__ == "__main__":
         hist_type, block_color_space, compare_method = get_param_from_arg(color_space, feature_type, compare_method_name)
 
         museum_set, museum_histograms_by_type, museum_set_names = read_set(museum_path, block_color_space, block_factor)
+        start_time = time.time()        
         query_set, query_histograms_by_type, query_set_names = read_set(query_path, block_color_space, block_factor)
         groundtruth_names=[]
         grndtrth_lines = []
@@ -150,6 +153,10 @@ if __name__ == "__main__":
                 elif (hist_type == 8):
                     score = compare_pyramid_weights(img_histogram, query_histogram, block_color_space, block_factor, compare_method)
                 scores.append([score, idx])
+    
+
+            # print(f"Processed {counter:d} images in {total_time:.2f} seconds.")
+            # print(f"Time per frame: {per_frame_time:.2f} seconds.")
         
             scores.sort(key=itemgetter(0))
             # cv2.imshow("query", query_set[idx_q])
@@ -165,6 +172,14 @@ if __name__ == "__main__":
             predicted_query.append(predicted_query_single)
         # print(groundtruth_names)
         # print(predicted_query)
+        total_time = time.time() - start_time
+        per_frame_time = 0
+        if K != 0:
+            per_frame_time = total_time/len(query_set)
+
+        print('Processed ' + str(len(query_set)) + ' queries in '+ str(total_time) + ' seconds.')
+        print('Time per query: '+ str(per_frame_time)+ ' seconds.')
+
         mapk_score = mapk(actual_query,predicted_query,K)
         print('MAP@K SCORE:')
         print(mapk_score)
