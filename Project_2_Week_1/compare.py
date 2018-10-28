@@ -28,16 +28,29 @@ def compare_block(hist1, hist2, method=1):
 
     return overall_score
 
-def compare_pyramid(hist1, hist2, block_color_space, method=1):
+def compare_pyramid(hist1, hist2, block_color_space, block_factor, method=1):
 
     overall_score = 0
     whole_image_index = len(hist1)-1
     overall_score = compare_3channel(hist1[whole_image_index], hist2[whole_image_index], block_color_space, method=method)
     
     for r in range(0, len(hist1)-1):
-            score = compare_block(hist1[r], hist2[r], method=method)
-            overall_score += score
+        score = compare_block(hist1[r], hist2[r], method=method)
+        overall_score += score
+    return overall_score
 
+def compare_pyramid_weights(hist1, hist2, block_color_space, block_factor, method=1):
+
+    overall_score = 0
+    whole_image_index = len(hist1)-1
+    overall_score = compare_3channel(hist1[whole_image_index], hist2[whole_image_index], block_color_space, method=method)
+    ratio = block_factor*block_factor
+    
+    for r in range(0, len(hist1)-1):
+        score = compare_block(hist1[r], hist2[r], method=method)
+        score = score / ratio
+        ratio = ratio / 4
+        overall_score += score
     return overall_score
 
 def compare_full(hist1, hist2, block_color_space, method=1):

@@ -1,16 +1,69 @@
+#!/usr/bin/python
 """
 Usage:
-  main.py <museum_set_path> <query_set_path> <color_space_block=0(gray), 1(rgb), 2(lab), 3(ycb), 4(hsv)>
+  main.py <museum_set_path> <query_set_path> [--colorSpace=<cs>] [--featureType=<pm>] [--blockFactor=<bf>] [--compareMethod=<cm>] 
+  main.py -h | --help
 Options:
-"""""
+  <museum_set_path>
+  <query_set_path>
+  [--colorSpace=<cs>]        [default: gray]
+  [--featureType=<pm>]       [default: block]
+  [--blockFactor=<bf>]       [default: '1']
+  [--compareMethod=<cm>]     [default: Hellinger]
+"""
+
 import sys
 import os
-from compare import compare, compare_3channel, compare_block, compare_pyramid, compare_full
+from compare import compare, compare_3channel, compare_block, compare_pyramid, compare_full, compare_pyramid_weights
 from create_descriptors import read_set
 from operator import itemgetter
 from ml_metrics import mapk
+from docopt import docopt
 import cv2
 import pickle
+
+def get_param_from_arg(color_space_name, feature_type_name, compare_method_name):
+    color_space = 0
+    hist_type = 0
+    compare_method = 0
+
+    if (color_space_name == 'gray'):
+        color_space = 0
+    elif (color_space_name == 'RGB'):
+        color_space = 1
+    elif (color_space_name == 'Lab'):
+        color_space = 2
+    elif (color_space_name == 'YCrCb'):
+        color_space = 3
+    elif (color_space_name == 'HSV'):
+        color_space = 4
+    else:
+        print('Wrong colorspace name. Using gray as default.')
+        color_space = 0
+    
+    
+    if (feature_type_name == 'block'):
+        hist_type = 5
+    elif (feature_type_name == 'pyramid'):
+        hist_type = 6
+    elif (feature_type_name == 'pyramid_weights'):
+        hist_type = 8
+    elif (feature_type_name == 'all_spaces'):
+        hist_type = 7
+    else:
+        hist_type = color_space
+    
+    if (compare_method_name == 'chi-square'):
+        compare_method = 1
+    elif (compare_method_name == 'intersection'):
+        compare_method = 2
+    elif (compare_method_name == 'Hellinger'):
+        compare_method = 3
+    else:
+        print('Wrong compare method name. Using chi-square as default.')
+        compare_method = 1
+
+    return hist_type, color_space, compare_method
 
 def save_results(directory, result, color_space, hist_type, block_factor, compare_method):
         color_space_name = ' '
@@ -31,6 +84,8 @@ def save_results(directory, result, color_space, hist_type, block_factor, compar
             hist_method_name = 'block_'+block_factor_name
         elif (hist_type == 6):
             hist_method_name = 'pyramid_'+block_factor_name
+        elif (hist_type == 8):
+            hist_method_name = 'pyramid_weights'+block_factor_name
         elif (hist_type == 7):
             hist_method_name = 'all_spaces_'+block_factor_name
         else:
@@ -47,6 +102,7 @@ def save_results(directory, result, color_space, hist_type, block_factor, compar
             compare_method_name = 'other'
 
         directory = directory +'/method_'+color_space_name+'_'+hist_method_name+'_'+compare_method_name
+        print(directory)
         base = 'result'
         out_list_name = '{}/{}.pkl'.format(directory, base)
         if not os.path.exists(directory):
@@ -57,9 +113,15 @@ def save_results(directory, result, color_space, hist_type, block_factor, compar
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
-        museum_path = sys.argv[1]
-        query_path = sys.argv[2]
-        block_color_space = int(sys.argv[3])
+        args = docopt(__doc__)
+
+        museum_path = args['<museum_set_path>']
+        query_path = args['<query_set_path>']          
+        color_space = args['--colorSpace']
+        feature_type = args['--featureType']
+        block_factor = int(args['--blockFactor'])
+        compare_method_name = args['--compareMethod']
+        hist_type, block_color_space, compare_method = get_param_from_arg(color_space, feature_type, compare_method_name)
 
         museum_set, museum_histograms_by_type, museum_set_names = read_set(museum_path, block_color_space, block_factor)
         query_set, query_histograms_by_type, query_set_names = read_set(query_path, block_color_space, block_factor)
@@ -69,16 +131,6 @@ if __name__ == "__main__":
         grndtrth_lines = grndtrth.read().splitlines()
         for line in grndtrth_lines:
             groundtruth_names.append([line])
-
-
-        block_factor = int(sys.argv[4])
-
-        # query_histogram = query_histograms_by_type[3][15]
-        # print(len(museum_histograms_by_type[6][0][2]))
-        # print(len(query_histograms_by_type[6][0]))
-        color_space = block_color_space
-        hist_type = 6
-        compare_method = 3
 
         actual_query = groundtruth_names
         K = 10
@@ -92,9 +144,11 @@ if __name__ == "__main__":
                 elif (hist_type == 5):
                     score = compare_block(img_histogram, query_histogram, compare_method)
                 elif (hist_type == 6):
-                    score = compare_pyramid(img_histogram, query_histogram, block_color_space, compare_method)
+                    score = compare_pyramid(img_histogram, query_histogram, block_color_space, block_factor, compare_method)
                 elif (hist_type == 7):
                     score = compare_full(img_histogram, query_histogram, block_color_space, compare_method)
+                elif (hist_type == 8):
+                    score = compare_pyramid_weights(img_histogram, query_histogram, block_color_space, block_factor, compare_method)
                 scores.append([score, idx])
         
             scores.sort(key=itemgetter(0))
@@ -109,18 +163,19 @@ if __name__ == "__main__":
                 #     cv2.waitKey()
                 # cv2.waitKey(500)
             predicted_query.append(predicted_query_single)
-        print(groundtruth_names)
-        print(predicted_query)
+        # print(groundtruth_names)
+        # print(predicted_query)
         mapk_score = mapk(actual_query,predicted_query,K)
         print('MAP@K SCORE:')
         print(mapk_score)
         # print(scores)
 
         max_index = scores.index(min(scores))
-        print(max_index)
+        # print(max_index)
         # print(max_score)
         result = score
-        save_results('results', result, color_space, hist_type, block_factor, compare_method)
+        # print(predicted_query)
+        save_results('results', predicted_query, block_color_space, hist_type, block_factor, compare_method)
         
         
 
