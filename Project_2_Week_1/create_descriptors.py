@@ -8,12 +8,13 @@ from compare import compare, compare_3channel, compare_block
 
 def read_set(dataset_path, block_color_space):
     dataset = []
-
+    set_names = []
     for filename in sorted(os.listdir(dataset_path)):
         img = cv2.imread(os.path.join(dataset_path, filename))
         dataset.append(img)
+        set_names.append(filename)
 
-    return dataset, create_descriptors(dataset, block_color_space)
+    return dataset, create_descriptors(dataset, block_color_space), set_names
 
 def read_query_image(image_path, block_color_space):
 
