@@ -6,14 +6,14 @@ import os
 from matplotlib import pyplot as plt
 from compare import compare, compare_3channel, compare_block
 
-def read_set(dataset_path, block_color_space):
+def read_set(dataset_path, block_color_space, block_factor=8):
     dataset = []
 
     for filename in sorted(os.listdir(dataset_path)):
         img = cv2.imread(os.path.join(dataset_path, filename))
         dataset.append(img)
 
-    return dataset, create_descriptors(dataset, block_color_space)
+    return dataset, create_descriptors(dataset, block_color_space, block_factor)
 
 def read_query_image(image_path, block_color_space):
 
@@ -21,7 +21,7 @@ def read_query_image(image_path, block_color_space):
 
     return img, create_descriptors(img, block_color_space)
 
-def create_descriptors(dataset, block_color_space):
+def create_descriptors(dataset, block_color_space, block_factor=8):
     gray_hists_dataset = []
     rgb_hists_dataset = []
     lab_hists_dataset = []
@@ -34,7 +34,6 @@ def create_descriptors(dataset, block_color_space):
 
     full_set_representation=[]
 
-    block_factor = 8
 
     for idx, im in enumerate(dataset):
         gray_hists_ind, rgb_hists_ind, lab_hists_ind, ycb_hists_ind, hsv_hists_ind = global_representation(im)
