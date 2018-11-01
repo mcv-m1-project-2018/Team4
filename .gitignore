@@ -8,10 +8,11 @@ gt.*
 settings.json
 .DS_Store
 
-*.pkl
 *.pyc
 *.tar
 outMask*
+result.pkl
+0*.pkl
 
 .idea/
 
