@@ -22,6 +22,8 @@ def find_features(img, feature_type='ORB'):
     """
     features_dataset = []
 
+    features = cv2.ORB_create()
+    
     if feature_type=='ORB':
         features = cv2.ORB_create()
     elif feature_type=='FAST':
@@ -45,9 +47,10 @@ def find_features(img, feature_type='ORB'):
 
     return des
     
-def match_features(des1, des2, matcher_type='BF', matching_method='KNN', threshold=0.85, norm_type='NORM_HAMMING', cross_check=False):
+def match_features(des1, des2, matcher_type='BF', matching_method='KNN', threshold=0.75, norm_type='NORM_HAMMING', cross_check=False):
     """
     Available matchers: 'BF', 'FLANN'
+    Available matching methods: 'KNN', 'MATCHER', 'RADIUS'
     
     Parameters:	
 
@@ -65,19 +68,26 @@ def match_features(des1, des2, matcher_type='BF', matching_method='KNN', thresho
 
     """
 
-
-    if matcher_type=='ORB':
-        matcher = cv2.BFMatcher_create(norm_type, cross_check)
-    elif matcher_type=='FAST':
+    matcher = cv2.BFMatcher_create()
+    if matcher_type=='BF':
+        if norm_type=='L1':
+            matcher = cv2.BFMatcher_create(cv2.NORM_L1)
+        if norm_type=='L2':
+            matcher = cv2.BFMatcher_create(cv2.NORM_L2)
+        if norm_type=='NORM_HAMMING':
+            matcher = cv2.BFMatcher_create(cv2.NORM_HAMMING)
+        if norm_type=='NORM_HAMMING2':
+            matcher = cv2.BFMatcher_create(cv2.NORM_HAMMING2)
+    elif matcher_type=='FLANN':
         matcher = cv2.FlannBasedMatcher_create()
-
+   
+    matches = matcher.knnMatch(des1,des2, k=2)
     if matching_method=='KNN':
         matches = matcher.knnMatch(des1,des2, k=2)
     elif matching_method=='MATCH':
-        matcher = matcher.match()
+        matches = matcher.match(des1,des2)
     elif matching_method=='RADIUS':
-        matcher = matcher.radiusMatch()
-
+        matches = matcher.radiusMatch(des1,des2)
 
     # Apply ratio test
     good = []

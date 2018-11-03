@@ -1,21 +1,21 @@
 #!/usr/bin/python
 """
 Usage:
-  main.py <museum_set_path> <query_set_path> [--colorSpace=<cs>] [--featureType=<pm>] [--blockFactor=<bf>] [--compareMethod=<cm>] 
+  main.py <museum_set_path> <query_set_path>   [--featureType=<ft>] [--matcherType=<mt>] [--matchingMethod=<mm>] [--distanceThreshold=<dt>] [--normType=<nt>] [--crossCheck=<cc>] 
   main.py -h | --help
 Options:
   <museum_set_path>
   <query_set_path>
-  [--colorSpace=<cs>]        Choose one of: gray, RGB, Lab, YCrCb, HSV     [default: gray]
-  [--featureType=<pm>]       Choose one of: block, pyramid, whole [default: block]
-  [--blockFactor=<bf>]       Number of blocks in a row [default: '1']
-  [--compareMethod=<cm>]     Choose one of: chi-square, intersection, Hellinger [default: Hellinger]
+  --featureType=<ft>          Available features: 'ORB', 'FAST','SIFT', 'SURF', 'KAZE', 'AKAZE', 'BRISK', 'MSER'         [default: ORB]
+  --matcherType=<mt>          Available matchers: 'BF', 'FLANN'                                                          [default: BF]
+  --matchingMethod=<mm>       Available matching methods: 'KNN', 'MATCHER', 'RADIUS'                                     [default: KNN]
+  --distanceThreshold=<dt>    The maximum distance between matched keypoints (lower value -> less weak matches)          [default: 0.75]
+  --normType=<nt>             L1, L2 norms preferable choices for SIFT, SURF. NORM_HAMMING for ORB, BRISK                [default: NORM_HAMMING]
+  --crossCheck=<cc>           optional bool parameter for BF matcher                                                     [default: False]
 """
 
 import sys
 import os
-# from compare import compare, compare_3channel, compare_block, compare_pyramid, compare_full, compare_pyramid_weights
-# from create_descriptors import read_set
 from features import read_set_features, match_features
 from operator import itemgetter
 from ml_metrics import mapk
@@ -23,89 +23,12 @@ from docopt import docopt
 import cv2
 import pickle
 import time
+import numpy as np
 
-
-def get_param_from_arg(color_space_name, feature_type_name, compare_method_name):
-    color_space = 0
-    hist_type = 0
-    compare_method = 0
-
-    if (color_space_name == 'gray'):
-        color_space = 0
-    elif (color_space_name == 'RGB'):
-        color_space = 1
-    elif (color_space_name == 'Lab'):
-        color_space = 2
-    elif (color_space_name == 'YCrCb'):
-        color_space = 3
-    elif (color_space_name == 'HSV'):
-        color_space = 4
-    else:
-        print('Wrong colorspace name. Using gray as default.')
-        color_space = 0
-    
-    
-    if (feature_type_name == 'block'):
-        hist_type = 5
-    elif (feature_type_name == 'pyramid'):
-        hist_type = 6
-    elif (feature_type_name == 'pyramid_weights'):
-        hist_type = 8
-    elif (feature_type_name == 'all_spaces'):
-        hist_type = 7
-    else:
-        hist_type = color_space
-    
-    if (compare_method_name == 'chi-square'):
-        compare_method = 1
-    elif (compare_method_name == 'intersection'):
-        compare_method = 2
-    elif (compare_method_name == 'Hellinger'):
-        compare_method = 3
-    elif (compare_method_name == 'bhatta'):
-        compare_method = 4
-    else:
-        print('Wrong compare method name. Using chi-square as default.')
-        compare_method = 1
-
-    return hist_type, color_space, compare_method
 
 def save_results(directory, result, color_space, hist_type, block_factor, compare_method):
-        color_space_name = ' '
-        if (color_space == 0):
-            color_space_name = 'gray'
-        elif (color_space == 1):
-            color_space_name = 'RGB'
-        elif (color_space == 2):
-            color_space_name = 'Lab'
-        elif (color_space == 3):
-            color_space_name = 'YCrCb'
-        elif (color_space == 4):
-            color_space_name = 'HSV'
         
-        block_factor_name = str(block_factor)+'x'+str(block_factor)
-        hist_method_name = ' '
-        if (hist_type == 5):
-            hist_method_name = 'block_'+block_factor_name
-        elif (hist_type == 6):
-            hist_method_name = 'pyramid_'+block_factor_name
-        elif (hist_type == 8):
-            hist_method_name = 'pyramid_weights'+block_factor_name
-        elif (hist_type == 7):
-            hist_method_name = 'all_spaces_'+block_factor_name
-        else:
-            hist_method_name = 'whole'
-        
-        compare_method_name = ' '
-        if (compare_method == 1):
-            compare_method_name = 'chi-square'
-        elif (compare_method == 2):
-            compare_method_name = 'intersection'
-        elif (compare_method == 3):
-            compare_method_name = 'Hellinger'
-        else:
-            compare_method_name = 'other'
-
+    #  TODO
         directory = directory +'/method_'+color_space_name+'_'+hist_method_name+'_'+compare_method_name
         print(directory)
         base = 'result'
@@ -122,18 +45,17 @@ if __name__ == "__main__":
 
         museum_path = args['<museum_set_path>']
         query_path = args['<query_set_path>']          
-        # color_space = args['--colorSpace']
-        # feature_type = args['--featureType']
-        # block_factor = int(args['--blockFactor'])
-        # compare_method_name = args['--compareMethod']
-        # hist_type, block_color_space, compare_method = get_param_from_arg(color_space, feature_type, compare_method_name)
+        feature_type = args['--featureType']
+        matcher_type = args['--matcherType']
+        matching_method = args['--matchingMethod']
+        distance_threshold = float(args['--distanceThreshold'])
+        norm_type = args['--normType']
+        cross_check = args['--crossCheck']
 
-        # museum_set, museum_histograms_by_type, museum_set_names = read_set(museum_path, block_color_space, block_factor)
-        museum_set, museum_set_features, museum_set_names = read_set_features(museum_path)
+        museum_set, museum_set_features, museum_set_names = read_set_features(museum_path,feature_type)
 
         start_time = time.time()        
-        # query_set, query_histograms_by_type, query_set_names = read_set(query_path, block_color_space, block_factor)
-        query_set, query_set_features, query_set_names = read_set_features(query_path)
+        query_set, query_set_features, query_set_names = read_set_features(query_path, feature_type)
         # groundtruth_names=[]
         # grndtrth_lines = []
         # grndtrth = open( "w4_query_devel.pkl", "r" )
@@ -145,30 +67,14 @@ if __name__ == "__main__":
         K = 5
         predicted_query = []
 
-        # for idx_q, query_histogram in enumerate (query_histograms_by_type[hist_type]):
-        #     scores = []
-        #     for idx, img_histogram in enumerate (museum_histograms_by_type[hist_type]):
-        #         if (hist_type < 5):
-        #             score = compare_3channel(img_histogram, query_histogram, block_color_space, compare_method)
-        #         elif (hist_type == 5):
-        #             score = compare_block(img_histogram, query_histogram, compare_method)
-        #         elif (hist_type == 6):
-        #             score = compare_pyramid(img_histogram, query_histogram, block_color_space, block_factor, compare_method)
-        #         elif (hist_type == 7):
-        #             score = compare_full(img_histogram, query_histogram, block_color_space, compare_method)
-        #         elif (hist_type == 8):
-        #             score = compare_pyramid_weights(img_histogram, query_histogram, block_color_space, block_factor, compare_method)
-        #         scores.append([score, idx])
         for idx_q, query_features in enumerate (query_set_features):
             scores = []
             for idx, museum_features in enumerate (museum_set_features):
                 
-                score = match_features(query_features, museum_features, 0.85)
+                score = match_features(query_features, museum_features, matcher_type, matching_method, distance_threshold, norm_type, cross_check)
                 if score > 57:
                     scores.append([score, idx])
 
-            # print(f"Processed {counter:d} images in {total_time:.2f} seconds.")
-            # print(f"Time per frame: {per_frame_time:.2f} seconds.")
             cv2.namedWindow("query",cv2.WINDOW_NORMAL)
             cv2.imshow("query", query_set[idx_q])
 
@@ -188,6 +94,9 @@ if __name__ == "__main__":
                 predicted_query.append(predicted_query_single)
             else:
                 print("No match for the picture")
+                no_match_img = np.zeros((500, 500,3), dtype=np.uint8)
+                cv2.putText(no_match_img,'PICTURE NOT FOUND',(80, 270),2,1,(100,40,255),4)
+                cv2.imshow("matched", no_match_img)
                 cv2.waitKey()
 
         # print(groundtruth_names)
