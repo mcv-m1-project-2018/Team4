@@ -31,7 +31,7 @@ def find_features(img, feature_type='ORB'):
     elif feature_type=='SIFT':
         features = cv2.xfeatures2d.SIFT_create()
     elif feature_type=='SURF':
-        features = cv2.xfeatures2d.SURF_create()
+        features = cv2.xfeatures2d.SURF_create(hessianThreshold=3000, upright=True, extended=False)
     elif feature_type=='KAZE':
         features = cv2.KAZE_create()
     elif feature_type=='AKAZE':
@@ -47,7 +47,7 @@ def find_features(img, feature_type='ORB'):
 
     return des
     
-def match_features(des1, des2, matcher_type='BF', matching_method='KNN', threshold=0.75, norm_type='NORM_HAMMING', cross_check=False):
+def match_features(des1, des2, matcher_type='BF', matching_method='KNN', threshold=0.75, norm_type='NORM_HAMMING', cross_check=False, swap_check=False):
     """
     Available matchers: 'BF', 'FLANN'
     Available matching methods: 'KNN', 'MATCHER', 'RADIUS'
@@ -81,18 +81,48 @@ def match_features(des1, des2, matcher_type='BF', matching_method='KNN', thresho
     elif matcher_type=='FLANN':
         matcher = cv2.FlannBasedMatcher_create()
    
-    matches = matcher.knnMatch(des1,des2, k=2)
-    if matching_method=='KNN':
+    
+    matches = []
+    if (des1 is not None and des2 is not None):
         matches = matcher.knnMatch(des1,des2, k=2)
-    elif matching_method=='MATCH':
-        matches = matcher.match(des1,des2)
-    elif matching_method=='RADIUS':
-        matches = matcher.radiusMatch(des1,des2)
+        if matching_method=='KNN':
+            matches = matcher.knnMatch(des1,des2, k=2)
+        elif matching_method=='MATCH':
+            matches = matcher.match(des1,des2)
+        elif matching_method=='RADIUS':
+            matches = matcher.radiusMatch(des1,des2)
 
     # Apply ratio test
     good = []
-    for m,n in matches:
-        if m.distance < threshold*n.distance:
-            good.append([m])
+    # print(len(matches))
+    # print(matches)
+    if len(matches): 
+        if (len(matches[0])>1):
+            for m,n in matches:
+                if m.distance < threshold*n.distance:
+                    good.append([m])
+
+    if (swap_check):
+        matches = []
+        if (des1 is not None and des2 is not None):
+            matches = matcher.knnMatch(des2,des1, k=2)
+            if matching_method=='KNN':
+                matches = matcher.knnMatch(des2,des1, k=2)
+            elif matching_method=='MATCH':
+                matches = matcher.match(des2,des1)
+            elif matching_method=='RADIUS':
+                matches = matcher.radiusMatch(des2,des1)
+
+        # Apply ratio test
+        good_swap = []
+        # print(len(matches))
+        # print(matches)
+        if len(matches): 
+            if (len(matches[0])>1):
+                for m,n in matches:
+                    if m.distance < threshold*n.distance:
+                        good_swap.append([m])
+        return(min(len(good), len(good_swap)))
+
     
     return len(good)

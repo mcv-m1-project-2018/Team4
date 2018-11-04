@@ -1,7 +1,7 @@
 #!/usr/bin/python
 """
 Usage:
-  main.py <museum_set_path> <query_set_path>   [--featureType=<ft>] [--matcherType=<mt>] [--matchingMethod=<mm>] [--distanceThreshold=<dt>] [--normType=<nt>] [--crossCheck=<cc>] 
+  main.py <museum_set_path> <query_set_path>   [--featureType=<ft>] [--matcherType=<mt>] [--matchingMethod=<mm>] [--distanceThreshold=<dt>] [--normType=<nt>] [--crossCheck=<cc>] [--swapCheck=<sc>] 
   main.py -h | --help
 Options:
   <museum_set_path>
@@ -12,6 +12,7 @@ Options:
   --distanceThreshold=<dt>    The maximum distance between matched keypoints (lower value -> less weak matches)          [default: 0.75]
   --normType=<nt>             L1, L2 norms preferable choices for SIFT, SURF. NORM_HAMMING for ORB, BRISK                [default: NORM_HAMMING]
   --crossCheck=<cc>           optional bool parameter for BF matcher                                                     [default: False]
+  --swapCheck=<sc>            optional bool parameter, take minimum match from cross matching with ratio test            [default: False]
 """
 
 import sys
@@ -52,6 +53,7 @@ if __name__ == "__main__":
         distance_threshold = float(args['--distanceThreshold'])
         norm_type = args['--normType']
         cross_check = args['--crossCheck']
+        swap_check=args['--swapCheck']
 
         GT_file = "w4_query_devel.pkl"
         gtList = GTlist(GT_file)
@@ -72,7 +74,7 @@ if __name__ == "__main__":
             scores = []
             for idx, museum_features in enumerate (museum_set_features):
                 
-                score = match_features(query_features, museum_features, matcher_type, matching_method, distance_threshold, norm_type, cross_check)
+                score = match_features(query_features, museum_features, matcher_type, matching_method, distance_threshold, norm_type, cross_check, swap_check)
                 if score > 57:
                     scores.append([score, idx])
 
