@@ -24,12 +24,13 @@ import cv2
 import pickle
 import time
 import numpy as np
+from grndtrth import GTlist
 
 
-def save_results(directory, result, color_space, hist_type, block_factor, compare_method):
+def save_results(directory, result, feature_type, matcher_type, matching_method, norm_type):
         
     #  TODO
-        directory = directory +'/method_'+color_space_name+'_'+hist_method_name+'_'+compare_method_name
+        directory = directory +'/desc_'+feature_type+'_'+matcher_type+'_'+matching_method+'_'+norm_type
         print(directory)
         base = 'result'
         out_list_name = '{}/{}.pkl'.format(directory, base)
@@ -52,19 +53,19 @@ if __name__ == "__main__":
         norm_type = args['--normType']
         cross_check = args['--crossCheck']
 
+        GT_file = "w4_query_devel.pkl"
+        gtList = GTlist(GT_file)
+        print(gtList)
+
+
+
+
         museum_set, museum_set_features, museum_set_names = read_set_features(museum_path,feature_type)
 
         start_time = time.time()        
         query_set, query_set_features, query_set_names = read_set_features(query_path, feature_type)
-        # groundtruth_names=[]
-        # grndtrth_lines = []
-        # grndtrth = open( "w4_query_devel.pkl", "r" )
-        # grndtrth_lines = grndtrth.read().splitlines()
-        # for line in grndtrth_lines:
-        #     groundtruth_names.append([line])
 
-        # actual_query = groundtruth_names
-        K = 5
+        K = 1
         predicted_query = []
 
         for idx_q, query_features in enumerate (query_set_features):
@@ -77,27 +78,28 @@ if __name__ == "__main__":
 
             cv2.namedWindow("query",cv2.WINDOW_NORMAL)
             cv2.imshow("query", query_set[idx_q])
-
+            predicted_query_single =[]
             if (len(scores)):
                 scores.sort(key=itemgetter(0), reverse=True)
                 cv2.namedWindow("matched",cv2.WINDOW_NORMAL)
-                predicted_query_single =[]
                 for idx in range (0,len(scores)):
                     cv2.imshow("matched", museum_set[scores[idx][1]])
                     print(scores[idx][0])
                     predicted_query_single.append(museum_set_names[scores[idx][1]])
                     if (idx == 0):
-                        predicted_query_single.append(museum_set_names[scores[idx][1]])
+                        # predicted_query_single.append(museum_set_names[scores[idx][1]])
 
                         cv2.waitKey()
                     cv2.waitKey(500)
-                predicted_query.append(predicted_query_single)
             else:
                 print("No match for the picture")
                 no_match_img = np.zeros((500, 500,3), dtype=np.uint8)
                 cv2.putText(no_match_img,'PICTURE NOT FOUND',(80, 270),2,1,(100,40,255),4)
                 cv2.imshow("matched", no_match_img)
+                predicted_query_single.append(-1)
                 cv2.waitKey()
+            predicted_query.append(predicted_query_single)
+
 
         # print(groundtruth_names)
         # print(predicted_query)
@@ -109,18 +111,19 @@ if __name__ == "__main__":
         print('Processed ' + str(len(query_set)) + ' queries in '+ str(total_time) + ' seconds.')
         print('Time per query: '+ str(per_frame_time)+ ' seconds.')
 
-        mapk_score = mapk(actual_query,predicted_query,K)
+        print('predicted query:')
+        print(predicted_query)
+        mapk_score = mapk(gtList, predicted_query, K)
         print('MAP@K SCORE:')
         print(mapk_score)
         # print(scores)
 
-        max_index = scores.index(min(scores))
-        # print(max_index)
-        # print(max_score)
-        result = score
+        # max_index = scores.index(min(scores))
+        # # print(max_index)
+        # # print(max_score)
+        # result = score
         # print(predicted_query)
-        save_results('results', predicted_query, block_color_space, hist_type, block_factor, compare_method)
-        
+        save_results('results', predicted_query,feature_type,matcher_type, matching_method,norm_type)
         
 
     else:
