@@ -29,9 +29,9 @@ def find_features(img, feature_type='ORB'):
     elif feature_type=='FAST':
         features = cv2.FastFeatureDetector_create()
     elif feature_type=='SIFT':
-        features = cv2.SIFT_create()
+        features = cv2.xfeatures2d.SIFT_create()
     elif feature_type=='SURF':
-        features = cv2.SURF_create()
+        features = cv2.xfeatures2d.SURF_create()
     elif feature_type=='KAZE':
         features = cv2.KAZE_create()
     elif feature_type=='AKAZE':
