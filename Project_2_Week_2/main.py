@@ -1,7 +1,7 @@
 #!/usr/bin/python
 """
 Usage:
-  main.py <museum_set_path> <query_set_path>   [--featureType=<ft>] [--matcherType=<mt>] [--matchingMethod=<mm>] [--distanceThreshold=<dt>] [--normType=<nt>] [--crossCheck=<cc>] [--swapCheck=<sc>] 
+  main.py <museum_set_path> <query_set_path>   [--featureType=<ft>] [--matcherType=<mt>] [--matchingMethod=<mm>] [--distanceThreshold=<dt>] [--normType=<nt>] [--crossCheck=<cc>] [--swapCheck] 
   main.py -h | --help
 Options:
   <museum_set_path>
@@ -12,7 +12,7 @@ Options:
   --distanceThreshold=<dt>    The maximum distance between matched keypoints (lower value -> less weak matches)          [default: 0.75]
   --normType=<nt>             L1, L2 norms preferable choices for SIFT, SURF. NORM_HAMMING for ORB, BRISK                [default: NORM_HAMMING]
   --crossCheck=<cc>           optional bool parameter for BF matcher                                                     [default: False]
-  --swapCheck=<sc>            optional bool parameter, take minimum match from cross matching with ratio test            [default: False]
+  --swapCheck                 optional flag, take minimum match from cross matching with ratio test            [default: False]
 """
 
 import sys
@@ -59,9 +59,6 @@ if __name__ == "__main__":
         gtList = GTlist(GT_file)
         print(gtList)
 
-
-
-
         museum_set, museum_set_features, museum_set_names = read_set_features(museum_path,feature_type)
 
         start_time = time.time()        
@@ -91,7 +88,7 @@ if __name__ == "__main__":
                     if (idx == 0):
                         # predicted_query_single.append(museum_set_names[scores[idx][1]])
 
-                        cv2.waitKey()
+                        cv2.waitKey(10)
                     cv2.waitKey(500)
             else:
                 print("No match for the picture")
@@ -99,7 +96,7 @@ if __name__ == "__main__":
                 cv2.putText(no_match_img,'PICTURE NOT FOUND',(80, 270),2,1,(100,40,255),4)
                 cv2.imshow("matched", no_match_img)
                 predicted_query_single.append(-1)
-                cv2.waitKey()
+                # cv2.waitKey()
             predicted_query.append(predicted_query_single)
 
 
