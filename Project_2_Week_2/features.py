@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 import os
+from resize import image_resize
 
 from matplotlib import pyplot as plt
 
@@ -8,8 +9,10 @@ def read_set_features(dataset_path, feature_type='ORB'):
     dataset = []
     set_names = []
     dataset_features = []
+    width = 1000
     for filename in sorted(os.listdir(dataset_path)):
         img = cv2.imread(os.path.join(dataset_path, filename))
+        # img = image_resize(img, width)
         dataset.append(img)
         set_names.append(filename)
         dataset_features.append(find_features(img,feature_type))
@@ -32,6 +35,7 @@ def find_features(img, feature_type='ORB'):
         features = cv2.xfeatures2d.SIFT_create()
     elif feature_type=='SURF':
         features = cv2.xfeatures2d.SURF_create(hessianThreshold=3000, upright=True, extended=False)
+        # features = cv2.xfeatures2d.SURF_create(hessianThreshold=3000, upright=False, extended=False)
     elif feature_type=='KAZE':
         features = cv2.KAZE_create()
     elif feature_type=='AKAZE':
@@ -79,18 +83,23 @@ def match_features(des1, des2, matcher_type='BF', matching_method='KNN', thresho
         if norm_type=='NORM_HAMMING2':
             matcher = cv2.BFMatcher_create(cv2.NORM_HAMMING2)
     elif matcher_type=='FLANN':
-        matcher = cv2.FlannBasedMatcher_create()
+        FLANN_INDEX_KDTREE = 0
+        index_params = dict(algorithm = FLANN_INDEX_KDTREE, trees = 5)
+        search_params = dict(checks=50)   # or pass empty dictionary
+        matcher = cv2.FlannBasedMatcher(index_params,search_params)
    
     
+    k = 2
     matches = []
     if (des1 is not None and des2 is not None):
-        matches = matcher.knnMatch(des1,des2, k=2)
-        if matching_method=='KNN':
-            matches = matcher.knnMatch(des1,des2, k=2)
-        elif matching_method=='MATCH':
-            matches = matcher.match(des1,des2)
-        elif matching_method=='RADIUS':
-            matches = matcher.radiusMatch(des1,des2)
+        if(len(des1)>2 and len(des2)>2):
+            matches = matcher.knnMatch(des1,des2, k=k)
+            if matching_method=='KNN':
+                matches = matcher.knnMatch(des1,des2, k=k)
+            elif matching_method=='MATCH':
+                matches = matcher.match(des1,des2)
+            elif matching_method=='RADIUS':
+                matches = matcher.radiusMatch(des1,des2)
 
     # Apply ratio test
     good = []
@@ -105,13 +114,14 @@ def match_features(des1, des2, matcher_type='BF', matching_method='KNN', thresho
     if (swap_check):
         matches = []
         if (des1 is not None and des2 is not None):
-            matches = matcher.knnMatch(des2,des1, k=2)
-            if matching_method=='KNN':
-                matches = matcher.knnMatch(des2,des1, k=2)
-            elif matching_method=='MATCH':
-                matches = matcher.match(des2,des1)
-            elif matching_method=='RADIUS':
-                matches = matcher.radiusMatch(des2,des1)
+            if(len(des1)>2 and len(des2)>2):
+                matches = matcher.knnMatch(des2,des1, k=k)
+                if matching_method=='KNN':
+                    matches = matcher.knnMatch(des2,des1, k=k)
+                elif matching_method=='MATCH':
+                    matches = matcher.match(des2,des1)
+                elif matching_method=='RADIUS':
+                    matches = matcher.radiusMatch(des2,des1)
 
         # Apply ratio test
         good_swap = []

@@ -57,14 +57,14 @@ if __name__ == "__main__":
 
         GT_file = "w4_query_devel.pkl"
         gtList = GTlist(GT_file)
-        print(gtList)
+        # print(gtList)
 
         museum_set, museum_set_features, museum_set_names = read_set_features(museum_path,feature_type)
 
         start_time = time.time()        
         query_set, query_set_features, query_set_names = read_set_features(query_path, feature_type)
 
-        K = 1
+        K = 10
         predicted_query = []
 
         for idx_q, query_features in enumerate (query_set_features):
@@ -72,7 +72,7 @@ if __name__ == "__main__":
             for idx, museum_features in enumerate (museum_set_features):
                 
                 score = match_features(query_features, museum_features, matcher_type, matching_method, distance_threshold, norm_type, cross_check, swap_check)
-                if score > 57:
+                if score > 55:
                     scores.append([score, idx])
 
             cv2.namedWindow("query",cv2.WINDOW_NORMAL)
@@ -88,7 +88,7 @@ if __name__ == "__main__":
                     if (idx == 0):
                         # predicted_query_single.append(museum_set_names[scores[idx][1]])
 
-                        cv2.waitKey(10)
+                        cv2.waitKey()
                     cv2.waitKey(500)
             else:
                 print("No match for the picture")
@@ -96,7 +96,7 @@ if __name__ == "__main__":
                 cv2.putText(no_match_img,'PICTURE NOT FOUND',(80, 270),2,1,(100,40,255),4)
                 cv2.imshow("matched", no_match_img)
                 predicted_query_single.append(-1)
-                # cv2.waitKey()
+                cv2.waitKey()
             predicted_query.append(predicted_query_single)
 
 
