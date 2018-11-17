@@ -1,22 +1,32 @@
 import numpy as np
 import cv2
 import os
+import cropRotate
+import numpy as np
 
 from matplotlib import pyplot as plt
 
-def read_set_features(dataset_path, feature_type='ORB'):
+def read_set_features(dataset_path, feature_type='ORB', crop_rotate=False, mask_museum=False):
     dataset = []
     set_names = []
     dataset_features = []
-    for filename in sorted(os.listdir(dataset_path)):
+    bboxes = []
+    text_bboxes =  cropRotate.load_annotations("./text.pkl")
+    for idx,filename in enumerate(sorted(os.listdir(dataset_path))):
         img = cv2.imread(os.path.join(dataset_path, filename))
+        if (crop_rotate):
+            bboxes, img = cropRotate.crop_rotate_manu(img)
+        if (mask_museum):
+            mask = mask_text(img, text_bboxes[idx])
+            dataset_features.append(find_features(img, feature_type, mask))
+        else:
+            dataset_features.append(find_features(img,feature_type))
         dataset.append(img)
         set_names.append(filename)
-        dataset_features.append(find_features(img,feature_type))
 
-    return dataset, dataset_features, set_names
+    return dataset, dataset_features, set_names, bboxes
 
-def find_features(img, feature_type='ORB'):
+def find_features(img, feature_type='ORB', mask=None):
     """
     Available descriptors: 'ORB', 'FAST','SIFT', 'SURF' 'KAZE', 'AKAZE', 'BRISK', 'MSER'
     """
@@ -40,12 +50,16 @@ def find_features(img, feature_type='ORB'):
         features = cv2.BRISK_create()
     elif feature_type=='MSER':
         features = cv2.MSER_create()
-    
-    kp, des = features.detectAndCompute(img,None)
+
+    kp, des = features.detectAndCompute(img,mask)
+    # img_print = cv2.drawKeypoints(img, kp, np.array([]), (0,0,255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+    # cv2.imshow("kp",img_print)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
     # features_dataset.append([kp,des])
     features_dataset.append(des)
 
-    return des
+    return kp, des
     
 def match_features(des1, des2, matcher_type='BF', matching_method='KNN', threshold=0.75, norm_type='NORM_HAMMING', cross_check=False, swap_check=False):
     """
@@ -83,6 +97,8 @@ def match_features(des1, des2, matcher_type='BF', matching_method='KNN', thresho
    
     
     matches = []
+    print(len(des1))
+    print(len(des2))
     if (des1 is not None and des2 is not None):
         matches = matcher.knnMatch(des1,des2, k=2)
         if matching_method=='KNN':
@@ -105,13 +121,13 @@ def match_features(des1, des2, matcher_type='BF', matching_method='KNN', thresho
     if (swap_check):
         matches = []
         if (des1 is not None and des2 is not None):
-            matches = matcher.knnMatch(des2,des1, k=2)
+            matches = matcher.knnMatch(np.asarray(des1,np.float32),np.asarray(des2,np.float32), k=2)
             if matching_method=='KNN':
-                matches = matcher.knnMatch(des2,des1, k=2)
+                matches = matcher.knnMatch(np.asarray(des1,np.float32),np.asarray(des2,np.float32), k=2)
             elif matching_method=='MATCH':
-                matches = matcher.match(des2,des1)
+                matches = matcher.match(np.asarray(des1,np.float32),np.asarray(des2,np.float32))
             elif matching_method=='RADIUS':
-                matches = matcher.radiusMatch(des2,des1)
+                matches = matcher.radiusMatch(np.asarray(des1,np.float32),np.asarray(des2,np.float32))
 
         # Apply ratio test
         good_swap = []
@@ -124,5 +140,28 @@ def match_features(des1, des2, matcher_type='BF', matching_method='KNN', thresho
                         good_swap.append([m])
         return(min(len(good), len(good_swap)))
 
-    
+    for m,n in matches:
+        if m.distance < threshold*n.distance:
+            good.append([m])
+
     return len(good)
+
+
+def mask_text (img, bboxes):
+    mask = np.zeros((img.shape[0], img.shape[1], 1),dtype=np.uint8)
+    mask[bboxes[1]:bboxes[3], bboxes[0]:bboxes[2]] = 255
+    mask = cv2.bitwise_not(mask)
+    return mask
+
+
+# def delete_keypoints_in_ROI (dataset_features, bboxes):
+#     # for keypoints, bbox in zip(dataset_features, bboxes):
+#     for i in range(len(dataset_features)):
+#         good_keypoints = []
+#         for keypoint in dataset_features[0][i]:
+#             if keypoint.pt[0]>bboxes[i][0] and keypoint.pt[0]<bboxes[i][2] and keypoint.pt[1]>bboxes[i][1] and keypoint.pt[1]<bboxes[i][3]:
+#                 continue
+#             else:
+#                 good_keypoints.append(keypoint)
+#         dataset_features[0].insert(i, good_keypoints)
+#     return dataset_features
