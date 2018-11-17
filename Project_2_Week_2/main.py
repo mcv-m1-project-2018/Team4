@@ -20,6 +20,7 @@ import os
 from features import read_set_features, match_features
 from operator import itemgetter
 from ml_metrics import mapk
+import cropRotate
 from docopt import docopt
 import cv2
 import pickle
@@ -55,21 +56,29 @@ if __name__ == "__main__":
         cross_check = args['--crossCheck']
         swap_check=args['--swapCheck']
 
-        GT_file = "w4_query_devel.pkl"
+        GT_file = "w5_query_devel.pkl"
         gtList = GTlist(GT_file)
         print(gtList)
 
-        museum_set, museum_set_features, museum_set_names = read_set_features(museum_path,feature_type)
+        museum_set, museum_set_features, museum_set_names, bboxes = read_set_features(museum_path,feature_type, mask_museum=False)
 
         start_time = time.time()        
-        query_set, query_set_features, query_set_names = read_set_features(query_path, feature_type)
 
-        K = 1
+        query_set, query_set_features, query_set_names, bboxes = read_set_features(query_path, feature_type, crop_rotate=False)
+        # groundtruth_names=[]
+        # grndtrth_lines = []
+        # grndtrth = open( "w4_query_devel.pkl", "r" )
+        # grndtrth_lines = grndtrth.read().splitlines()
+        # for line in grndtrth_lines:
+        #     groundtruth_names.append([line])
+
+        # actual_query = groundtruth_names
+        K = 5
         predicted_query = []
 
-        for idx_q, query_features in enumerate (query_set_features):
+        for idx_q, query_features in enumerate (query_set_features[1]):
             scores = []
-            for idx, museum_features in enumerate (museum_set_features):
+            for idx, museum_features in enumerate (museum_set_features[1]):
                 
                 score = match_features(query_features, museum_features, matcher_type, matching_method, distance_threshold, norm_type, cross_check, swap_check)
                 if score > 57:
@@ -115,6 +124,9 @@ if __name__ == "__main__":
         mapk_score = mapk(gtList, predicted_query, K)
         print('MAP@K SCORE:')
         print(mapk_score)
+        # mapk_score = mapk(actual_query,predicted_query,K)
+        # print('MAP@K SCORE:')
+        # print(mapk_score)
         # print(scores)
 
         # max_index = scores.index(min(scores))
@@ -123,7 +135,9 @@ if __name__ == "__main__":
         # result = score
         # print(predicted_query)
         save_results('results', predicted_query,feature_type,matcher_type, matching_method,norm_type)
+        # save_results('results', predicted_query, block_color_space, hist_type, block_factor, compare_method)
         
+
 
     else:
         print("ARGUMENTS NEEDED!")
